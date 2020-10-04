@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>991</width>
-    <height>869</height>
+    <width>1166</width>
+    <height>862</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,10 +20,10 @@
    <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>10</y>
-      <width>961</width>
-      <height>451</height>
+      <x>9</x>
+      <y>9</y>
+      <width>1121</width>
+      <height>421</height>
      </rect>
     </property>
     <property name="orientation">
@@ -44,6 +44,12 @@
         </property>
         <property name="autoScroll">
          <bool>true</bool>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
         </property>
        </widget>
       </item>
@@ -860,19 +866,32 @@
    <widget class="QSplitter" name="splitter_2">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>500</y>
-      <width>921</width>
-      <height>321</height>
+      <x>9</x>
+      <y>459</y>
+      <width>1131</width>
+      <height>341</height>
      </rect>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
     </property>
     <widget class="QGroupBox" name="groupBox_2">
+     <property name="contextMenuPolicy">
+      <enum>Qt::DefaultContextMenu</enum>
+     </property>
      <property name="title">
       <string>持仓</string>
      </property>
+     <widget class="QLineEdit" name="lineEdit">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>90</y>
+        <width>221</width>
+        <height>81</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
@@ -880,8 +899,13 @@
      </property>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>挂单</string>
+       <string>本地套利单</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QTableView" name="tableView"/>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tab_4">
       <attribute name="title">
@@ -899,6 +923,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionLogin"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLogin">
@@ -911,61 +936,13 @@
  <resources>
   <include location="CtpArb.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>mainToolBar</sender>
-   <signal>actionTriggered(QAction*)</signal>
-   <receiver>CtpArbClass</receiver>
-   <slot>ShowLoginForm()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>32</x>
-     <y>6</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>145</x>
-     <y>0</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_add_arb</sender>
-   <signal>clicked()</signal>
-   <receiver>CtpArbClass</receiver>
-   <slot>AddArbItem()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>527</x>
-     <y>421</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>999</x>
-     <y>545</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>tableView_arblist</sender>
-   <signal>clicked(QModelIndex)</signal>
-   <receiver>CtpArbClass</receiver>
-   <slot>ShowArbItem(QModelIndex)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>153</x>
-     <y>168</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>274</x>
-     <y>-20</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>ShowLoginForm()</slot>
   <slot>ShowInstrument()</slot>
   <slot>ChooseInstrument(QModelIndex)</slot>
   <slot>AddArbItem()</slot>
-  <slot>ShowArbItem(QModelIndex)</slot>
+  <slot>ClickArbItem(QModelIndex)</slot>
+  <slot>DeleteArbItem()</slot>
  </slots>
 </ui>

@@ -10,10 +10,11 @@
 
 extern QStandardItemModel *modelInstTree; //合约树形结构数据。
 extern QStandardItemModel *modelArbTable; //套利列表表格模型数据，
-extern QList<ArbItem> arbList; //套利策略列表。
+extern QList<ArbPortf> arbList; //套利策略列表。
 
 class CtpArb : public QMainWindow
 {
+
     Q_OBJECT
 
 public:
@@ -25,8 +26,10 @@ public slots:
 	void ShowLoginForm(); //显示登录窗口。
 	void ShowInstrument(); //显示合约树。
 	void ChooseInstrument(QModelIndex idx); //选择指定合约
-	void AddArbItem(); //添加套利策略。
-	void ShowArbItem(QModelIndex); //点击已经添加的套利组件。
+	void AddArbPortf(); //添加套利组合。
+	void ClickArbPortf(QModelIndex); //点击套利组合。
+	void ShowContextMenu(QPoint pos); //套利组件列表上显示的右键点击事件。
+	void DeleteArbPortf(); //删除套利组合。
 
 protected:
 	bool eventFilter(QObject *obj, QEvent *e); //事件过滤器，

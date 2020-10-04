@@ -3,7 +3,9 @@
 #include <QList>
 #include <QString>
 #include <QDataStream>
+#include <QTime>
 
+//套利单腿，
 struct ArbLeg {
 	QString InstrumentID; //合约ID
 	QString Direction; //交易方向（首次）
@@ -26,11 +28,11 @@ struct ArbLeg {
 
 };
 
-///套利对信息，
-struct ArbItem
+///套利组合
+struct ArbPortf
 {
 	QString Name; //名称。
-	QList<ArbLeg> Legs;
+	QList<ArbLeg> LegList;
 	QString Offset; //开、平、自动开平
 	QString SendOrderType; //下单方式：全部同时、主动腿。
 
@@ -46,8 +48,8 @@ struct ArbItem
 	bool Loop; //循环套利。
 
 	//序列化
-	friend QDataStream &operator<<(QDataStream& input, const ArbItem& dt){
-		input << dt.Name << dt.Legs << dt.Offset << dt.SendOrderType \
+	friend QDataStream &operator<<(QDataStream& input, const ArbPortf& dt){
+		input << dt.Name << dt.LegList << dt.Offset << dt.SendOrderType \
 			<< dt.OpenCondFormula << dt.OpenCondOperator << dt.OpenCondVal \
 			<< dt.CloseCondFormula << dt.CloseCondOperator << dt.CloseCondVal \
 			<< dt.Times << dt.Loop;
@@ -56,13 +58,33 @@ struct ArbItem
 	}
 
 	//反序列化
-	friend QDataStream &operator>>(QDataStream& output, ArbItem& dt){
-		output >> dt.Name >> dt.Legs >> dt.Offset >> dt.SendOrderType \
+	friend QDataStream &operator>>(QDataStream& output, ArbPortf& dt){
+		output >> dt.Name >> dt.LegList >> dt.Offset >> dt.SendOrderType \
 			>> dt.OpenCondFormula >> dt.OpenCondOperator >> dt.OpenCondVal \
 			>> dt.CloseCondFormula >> dt.CloseCondOperator >> dt.CloseCondVal \
 			>> dt.Times >> dt.Loop;
 		return output;
 	}
 
+
+};
+
+//套利单；
+struct ArbOrder {
+	ArbPortf portf; //套利组合。
+	QTime Time; //下单时间
+	QList<int> StatusList; //每一腿的状态，和ArbLegs是一一对应的：未发，下单 ，成交，
+
+	//序列化
+	friend QDataStream &operator<<(QDataStream& input, const ArbOrder& dt) {
+		input << dt.portf << dt.Time << dt.StatusList ;
+		return input;
+	}
+
+	//反序列化
+	friend QDataStream &operator>>(QDataStream& output, ArbOrder& dt) {
+		output >> dt.portf >> dt.Time >> dt.StatusList;;
+		return output;
+	}
 
 };
