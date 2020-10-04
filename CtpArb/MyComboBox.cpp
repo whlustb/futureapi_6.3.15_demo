@@ -10,6 +10,7 @@ MyComboBox::~MyComboBox()
 
 }
 
+
 void MyComboBox::mousePressEvent(QMouseEvent *event)
 {
 	if (event->button() == Qt::LeftButton)

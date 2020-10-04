@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="MyComboBox.cpp" />
+    <ClCompile Include="MyTreeView.cpp" />
     <QtRcc Include="CtpArb.qrc" />
     <QtUic Include="CtpArb.ui" />
     <QtMoc Include="CtpArb.h" />
@@ -130,11 +131,13 @@
     <ClInclude Include="..\6.3.15_demo\ThostFtdcUserApiStruct.h" />
     <ClInclude Include="..\6.3.15_demo\traderApi.h" />
     <ClInclude Include="..\6.3.15_demo\traderSpi.h" />
+    <ClInclude Include="CtpArbStruct.h" />
     <ClInclude Include="functions.h" />
     <ClInclude Include="HandlerQuote.h" />
     <ClInclude Include="HandlerTrade.h" />
     <ClInclude Include="HandlerVars.h" />
     <ClInclude Include="main.h" />
+    <QtMoc Include="MyTreeView.h" />
     <QtMoc Include="MyComboBox.h" />
   </ItemGroup>
   <ItemGroup>

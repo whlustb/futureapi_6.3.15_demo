@@ -22,6 +22,9 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="自定义控件">
+      <UniqueIdentifier>{e95999bc-3a16-4860-b8bc-12b10ee85d8f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="CtpArb.qrc">
@@ -56,9 +59,6 @@
     <ClCompile Include="HandlerVars.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MyComboBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HandlerQuote.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,13 +68,22 @@
     <ClCompile Include="functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MyComboBox.cpp">
+      <Filter>自定义控件</Filter>
+    </ClCompile>
+    <ClCompile Include="MyTreeView.cpp">
+      <Filter>自定义控件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="LoginForm.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="MyComboBox.h">
-      <Filter>Header Files</Filter>
+      <Filter>自定义控件</Filter>
+    </QtMoc>
+    <QtMoc Include="MyTreeView.h">
+      <Filter>自定义控件</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CtpArbStruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

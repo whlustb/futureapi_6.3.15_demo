@@ -1042,7 +1042,7 @@ QStandardItem* addTreeItem(QStandardItem *pitem, char* name) {
 ///请求查询合约响应
 void HandlerTrade::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	extern QStandardItemModel *modelInst; //合约树形结构数据。
+	extern QStandardItemModel *modelInstTree; //合约树形结构数据。
 
 	LOG("<OnRspQryInstrument>\n");
 	if (pInstrument)
@@ -1056,7 +1056,7 @@ void HandlerTrade::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CT
 		LOG("\tCreateDate [%s]\n", pInstrument->CreateDate);
 
 		//根节点。
-		QStandardItem *parentItem = modelInst->invisibleRootItem();
+		QStandardItem *parentItem = modelInstTree->invisibleRootItem();
 		LOG("根节点txt[%s]\n", gbk2utf8(parentItem->text().toStdString().c_str()))
 
 		//先找交易所
