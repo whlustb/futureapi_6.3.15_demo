@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <iostream>
 #include <string>
+#include "CtpArbFunc.h"
 
 LoginForm::LoginForm(QWidget *parent)
 	: QWidget(parent)
@@ -10,7 +11,6 @@ LoginForm::LoginForm(QWidget *parent)
 
 	system("COLOR 0A");
 	logfile = fopen("syslog.txt", "w");
-
 
 }
 
@@ -27,7 +27,7 @@ void LoginForm::Login()
 	md_api->RegisterSpi(&m_spi);
 	md_api->RegisterFront(const_cast<char *>(g_chFrontMdaddr.c_str()));
 	md_api->Init();
-	WaitForSingleObject(xinhao, INFINITE);
+	WaitForSingleObject(g_qEvent, INFINITE);
 
 	/****交易相关****/
 	//定义交易api.
@@ -60,9 +60,11 @@ void LoginForm::Login()
 	WaitForSingleObject(g_hEvent, INFINITE);
 
 	//查询合约
-	//strcpy_s(g_chInstrumentID, "rb2101"); //留空时，查询全部合约 。查询后的合约，是自动保存下来的，下次订阅时，也是订阅查询的这些合约 。
+	strcpy_s(g_chInstrumentID, "rb2101"); //留空时，查询全部合约 。查询后的合约，是自动保存下来的，下次订阅时，也是订阅查询的这些合约 。
 	spi.ReqQryInstrument();
-	WaitForSingleObject(xinhao, INFINITE);
+	WaitForSingleObject(g_qEvent, INFINITE);
+	//填充合约树。
+	FillModelInst();
 
 	//订阅行情
 	//m_spi.SubscribeMarketData();
@@ -74,6 +76,7 @@ void LoginForm::Login()
 
 LoginForm::~LoginForm()
 {
+
 }
 
 

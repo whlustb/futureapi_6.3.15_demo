@@ -74,6 +74,9 @@
     <ClCompile Include="MyTreeView.cpp">
       <Filter>自定义控件</Filter>
     </ClCompile>
+    <ClCompile Include="CtpArbFunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="LoginForm.h">
@@ -147,6 +150,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CtpArbStruct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThostApiStruct_Serielize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CtpArbFunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

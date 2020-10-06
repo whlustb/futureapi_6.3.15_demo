@@ -122,9 +122,9 @@ cir:pUserApi->RegisterSpi(&sh);
 			pUserMdApi->RegisterSpi(&ash);
 			pUserMdApi->RegisterFront(const_cast<char *>(g_chFrontMdaddr.c_str()));
 			pUserMdApi->Init();
-			WaitForSingleObject(xinhao, INFINITE);
+			WaitForSingleObject(g_qEvent, INFINITE);
 			sh.ReqQryInstrument();//查询合约
-			WaitForSingleObject(xinhao, INFINITE);
+			WaitForSingleObject(g_qEvent, INFINITE);
 			ash.SubscribeMarketData();//订阅行情
 			_getch();
 			pUserMdApi->Release();
@@ -601,7 +601,7 @@ cir:pUserApi->RegisterSpi(&sh);
 				pUserMdApi->RegisterSpi(&ash);
 				pUserMdApi->RegisterFront(const_cast<char *>(g_chFrontMdaddr.c_str()));
 				pUserMdApi->Init();
-				WaitForSingleObject(xinhao, INFINITE);
+				WaitForSingleObject(g_qEvent, INFINITE);
 				ash.SubscribeMarketData();//行情订阅询价请求
 				sh.ReqForQuoteInsert();//交易请求询价
 				_getch();

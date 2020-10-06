@@ -87,6 +87,10 @@ extern TThostFtdcAuthCodeType	g_chAuthCode;
 ///App代码
 extern TThostFtdcAppIDType	g_chAppID;
 
-extern HANDLE xinhao;
+extern HANDLE g_qEvent;
 
 extern CTraderApi *pUserApi;
+
+/******声明全局变量、保留部分CTP返回信息，******/
+extern QMap<QString, CThostFtdcInstrumentField> g_instMap;
+

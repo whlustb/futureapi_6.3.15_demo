@@ -1026,23 +1026,10 @@ void HandlerTrade::ReqQryInstrument()
 	LOG((b == 0) ? "请求查询合约......发送成功\n" : "请求查询合约......发送失败，错误序号=[%d]\n", b);
 }
 
-QStandardItem* addTreeItem(QStandardItem *pitem, char* name) {
-	//cout << "子节点数量" << pitem->rowCount();
-	for (int i = 0; i < pitem->rowCount(); i++) {
-		if (pitem->child(i,0)->text() == name) {
-			return pitem->child(i, 0); //存在时，直接返回。
-		}
-	}
-	//不存在时，添加。
-	QStandardItem *item = new QStandardItem(name);
-	pitem->appendRow(item);
-	return item;
-}
 
 ///请求查询合约响应
 void HandlerTrade::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	extern QStandardItemModel *modelInstTree; //合约树形结构数据。
 
 	LOG("<OnRspQryInstrument>\n");
 	if (pInstrument)
@@ -1055,23 +1042,8 @@ void HandlerTrade::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CT
 		LOG("\tProductID [%s]\n", pInstrument->ProductID);
 		LOG("\tCreateDate [%s]\n", pInstrument->CreateDate);
 
-		//根节点。
-		QStandardItem *parentItem = modelInstTree->invisibleRootItem();
-		LOG("根节点txt[%s]\n", gbk2utf8(parentItem->text().toStdString().c_str()))
-
-		//先找交易所
-		parentItem  = addTreeItem(parentItem, pInstrument->ExchangeID);
-
-		
-		//使用正则从合约名称中匹配中交易品种。
-		QString pname = QString(gbk2utf8(pInstrument->InstrumentName));
-		pname.replace(QRegExp("\\d+"), "");
-
-		//找交易品种，
-		parentItem = addTreeItem(parentItem, const_cast<char *>(pname.toStdString().c_str()));
-
-		//添加合约日期。
-		parentItem = addTreeItem(parentItem, pInstrument->InstrumentID);
+		//保留合约信息，
+		g_instMap[pInstrument->InstrumentID] = *pInstrument;
 
 
 		/*LOG("\tOpenDate [%s]\n", pInstrument->OpenDate);
@@ -1110,7 +1082,7 @@ void HandlerTrade::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CT
 	LOG("</OnRspQryInstrument>\n");
 	if (bIsLast)
 	{
-		SetEvent(xinhao);
+		SetEvent(g_qEvent);
 	}
 }
 

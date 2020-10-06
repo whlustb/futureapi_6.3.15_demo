@@ -14,3 +14,6 @@ char * gbk2utf8(const char* gb2312)
 	if (wstr) delete[] wstr;
 	return str;
 }
+
+
+

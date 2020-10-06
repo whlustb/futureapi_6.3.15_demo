@@ -85,7 +85,7 @@ TThostFtdcAuthCodeType	g_chAuthCode;
 ///App代码
 TThostFtdcAppIDType	g_chAppID;
 
-HANDLE xinhao = CreateEvent(NULL, false, false, NULL);
+HANDLE g_qEvent = CreateEvent(NULL, false, false, NULL);
 
 CTraderApi *pUserApi = new CTraderApi;
 
@@ -135,7 +135,7 @@ public:
 				pRspInfo->ErrorID, pRspInfo->ErrorMsg, nRequestID, bIsLast);
 			exit(-1);
 		}
-		SetEvent(xinhao);
+		SetEvent(g_qEvent);
 		//SubscribeMarketData();//订阅行情
 		//SubscribeForQuoteRsp();//询价请求
 	}
@@ -234,7 +234,7 @@ public:
 		LOG("\tnRequestID = [%d]\n", nRequestID);
 		LOG("\tbIsLast = [%d]\n", bIsLast);
 		LOG("</OnRspSubForQuoteRsp>\n");
-		SetEvent(xinhao);
+		SetEvent(g_qEvent);
 	}
 
 
@@ -252,7 +252,7 @@ public:
 			LOG("\tExchangeID = [%s]\n", pForQuoteRsp->ExchangeID);
 		}
 		LOG("</OnRtnForQuoteRsp>\n");
-		SetEvent(xinhao);
+		SetEvent(g_qEvent);
 	}
 
 private:
@@ -1339,7 +1339,7 @@ public:
 		LOG("</OnRspQryInstrument>\n");
 		if (bIsLast)
 		{
-			SetEvent(xinhao);
+			SetEvent(g_qEvent);
 		}
 	}
 

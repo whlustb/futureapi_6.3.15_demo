@@ -64,6 +64,9 @@ TThostFtdcAuthCodeType	g_chAuthCode;
 ///App代码
 TThostFtdcAppIDType	g_chAppID;
 
-HANDLE xinhao = CreateEvent(NULL, false, false, NULL);
+HANDLE g_qEvent = CreateEvent(NULL, false, false, NULL);
 
 CTraderApi *pUserApi = new CTraderApi;
+
+/******定义全局变量、保留部分CTP返回信息，******/
+QMap<QString, CThostFtdcInstrumentField> g_instMap;

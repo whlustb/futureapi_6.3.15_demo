@@ -44,7 +44,7 @@ void HandlerQuote::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
 			pRspInfo->ErrorID, pRspInfo->ErrorMsg, nRequestID, bIsLast);
 		exit(-1);
 	}
-	SetEvent(xinhao);
+	SetEvent(g_qEvent);
 	//SubscribeMarketData();//订阅行情
 	//SubscribeForQuoteRsp();//询价请求
 }
@@ -114,6 +114,9 @@ void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMa
 		LOG("\tOpenInterest = [%d]\n", pDepthMarketData->OpenInterest);
 	}
 	LOG("</OnRtnDepthMarketData>\n");
+
+	//处理套利订单。
+
 }
 
 ///订阅询价请求
@@ -143,7 +146,7 @@ void HandlerQuote::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpeci
 	LOG("\tnRequestID = [%d]\n", nRequestID);
 	LOG("\tbIsLast = [%d]\n", bIsLast);
 	LOG("</OnRspSubForQuoteRsp>\n");
-	SetEvent(xinhao);
+	SetEvent(g_qEvent);
 }
 
 
@@ -161,5 +164,5 @@ void HandlerQuote::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 		LOG("\tExchangeID = [%s]\n", pForQuoteRsp->ExchangeID);
 	}
 	LOG("</OnRtnForQuoteRsp>\n");
-	SetEvent(xinhao);
+	SetEvent(g_qEvent);
 }

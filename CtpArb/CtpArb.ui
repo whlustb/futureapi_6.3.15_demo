@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CtpArb</string>
+   <string>自由组合套利</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="styleSheet">
@@ -31,7 +31,7 @@
     </property>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>组件列表</string>
+      <string>组合列表</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
@@ -113,7 +113,7 @@
            <item>
             <widget class="QLineEdit" name="lineEdit_arb_name">
              <property name="styleSheet">
-              <string notr="true"/>
+              <string notr="true">background-color: rgb(255, 255, 255);</string>
              </property>
              <property name="text">
               <string/>
@@ -246,7 +246,7 @@
            <rect>
             <x>80</x>
             <y>40</y>
-            <width>253</width>
+            <width>241</width>
             <height>31</height>
            </rect>
           </property>
@@ -286,11 +286,8 @@
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="spinBox_slip1"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
+            <widget class="QSpinBox" name="spinBox_slip1">
+             <property name="suffix">
               <string>点</string>
              </property>
             </widget>
@@ -331,7 +328,7 @@
            <rect>
             <x>79</x>
             <y>40</y>
-            <width>253</width>
+            <width>241</width>
             <height>31</height>
            </rect>
           </property>
@@ -371,11 +368,8 @@
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="spinBox_slip2"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
+            <widget class="QSpinBox" name="spinBox_slip2">
+             <property name="suffix">
               <string>点</string>
              </property>
             </widget>
@@ -798,7 +792,7 @@
          <widget class="QPushButton" name="pushButton_add_arb">
           <property name="geometry">
            <rect>
-            <x>30</x>
+            <x>40</x>
             <y>150</y>
             <width>101</width>
             <height>23</height>
@@ -841,7 +835,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="spinBox_times"/>
+            <widget class="QSpinBox" name="spinBox_times">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>999</number>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="checkBox_loop">
@@ -882,21 +883,11 @@
      <property name="title">
       <string>持仓</string>
      </property>
-     <widget class="QLineEdit" name="lineEdit">
-      <property name="geometry">
-       <rect>
-        <x>100</x>
-        <y>90</y>
-        <width>221</width>
-        <height>81</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pushButton">
       <property name="geometry">
        <rect>
-        <x>190</x>
-        <y>40</y>
+        <x>110</x>
+        <y>100</y>
         <width>75</width>
         <height>23</height>
        </rect>
@@ -916,7 +907,7 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
-        <widget class="QTableView" name="tableView"/>
+        <widget class="QTableView" name="tableView_ordlist"/>
        </item>
       </layout>
      </widget>
