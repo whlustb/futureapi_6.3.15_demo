@@ -7,8 +7,12 @@
 #include <iostream>
 #include <QRegExp>
 #include "functions.h"
+#include "LoginForm.h"
 
 using namespace std;
+
+LoginForm* w_login = nullptr;
+CtpArb* w_main = nullptr;
 
 int main(int argc, char *argv[])
 {
@@ -26,7 +30,10 @@ int main(int argc, char *argv[])
 	_getch();
 	*/
 
-    CtpArb w;
-    w.show();
+    //CtpArb w;
+    //w.show();
+	w_login = new LoginForm();
+	w_login->show();
+
     return a.exec();
 } 

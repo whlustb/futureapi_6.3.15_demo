@@ -66,7 +66,14 @@ TThostFtdcAppIDType	g_chAppID;
 
 HANDLE g_qEvent = CreateEvent(NULL, false, false, NULL);
 
-CTraderApi *pUserApi = new CTraderApi;
+
+/***********定义全局变量API/SPI相关*********/
+//定义行情API/SPI
+CThostFtdcMdApi* md_api = CThostFtdcMdApi::CreateFtdcMdApi(".\\flow\\md");
+HandlerQuote* m_spi = new HandlerQuote(md_api);
+//定义交易API/SPI
+CTraderApi* api = new CTraderApi();
+HandlerTrade* spi = new HandlerTrade(api); //将api做为参数传入spi，便于在内部调用。
 
 /******定义全局变量、保留部分CTP返回信息，******/
 QMap<QString, CThostFtdcInstrumentField> g_instMap;

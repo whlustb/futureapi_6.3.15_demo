@@ -19,6 +19,8 @@
 #include <QStandardItemModel>
 
 #include "functions.h"
+#include "HandlerQuote.h"
+#include "HandlerTrade.h"
 
 extern FILE *logfile;
 
@@ -86,10 +88,14 @@ extern TThostFtdcProductInfoType	g_chUserProductInfo;
 extern TThostFtdcAuthCodeType	g_chAuthCode;
 ///App代码
 extern TThostFtdcAppIDType	g_chAppID;
-
+//行情处理等候事件，
 extern HANDLE g_qEvent;
 
-extern CTraderApi *pUserApi;
+/************声明全局API及SPI对象*******************************/
+extern CThostFtdcMdApi* md_api; //行情API.
+extern HandlerQuote* m_spi; //行情SPI.
+extern CTraderApi* api; //交易API
+extern HandlerTrade* spi; //交易SPI.
 
 /******声明全局变量、保留部分CTP返回信息，******/
 extern QMap<QString, CThostFtdcInstrumentField> g_instMap;

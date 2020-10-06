@@ -114,7 +114,7 @@ void HandlerTrade::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThos
 	LOG("\tnRequestID [%d]\n", nRequestID);
 	LOG("\tbIsLast [%d]\n", bIsLast);
 	LOG("</OnRspUserLogout>\n");
-	pUserApi->Release();
+	api->Release();
 }
 
 ///请求确认结算单

@@ -29,87 +29,12 @@ QTreeView *treeInst; //合约树。
 QLineEdit* setInsEdit; //标记当前要设置的是哪个合约。
 QMenu* popMenu; //套利组件上的右键菜单。
 
-struct Test {
-public:
-	char a1[30];
-	char* a2;
-	char a;
-	int b;
-	double c;
-
-	//序列化 
-	friend QDataStream &operator<<(QDataStream& input, const Test& dt) {
-		QString str = QString("北京"); // QString(dt.a2);
-		input << QString(dt.a1) << QString("北京") << QChar(dt.a) << qint32(dt.b) << qreal(dt.c);
-		return input;
-	};
-
-	//反序列化
-	friend QDataStream &operator>>(QDataStream& output, Test& dt) {
-		QByteArray bts;
-		QString str;
-		output >> dt.a1 >> str >> dt.a >> dt.b >> dt.c;
-
-
-		QTextCodec *tc = QTextCodec::codecForName("GBK");
-		QString tmpQStr = tc->toUnicode(bts);
-
-
-		return output;
-	};
-};
-
 CtpArb::CtpArb(QWidget *parent)
-    : QMainWindow(parent)
-{
-	/*
-	char cr[16] = {};
-	bool aa = cr[0] == '\0';
-	bool a = cr == ""; //false
-	int i = sizeof(cr); //16
-	int i2 = strlen(cr); //6
-	QString s = QString(cr); //乱码，
-	int a2 = s.count(); //6
-	string s2 = string(cr); //乱码。
-	QString str2 = QString::fromLocal8Bit(cr); //乱码。
-	*/
-
-	/*
-	//保存。
-	QMap<QString, Test> mp1;
-	Test dt;
-	QString str = QString("北京");
-	QByteArray ba = str.toLatin1(); 
-
-	strcpy(dt.a1, "rb1801");
-	strcpy(dt.a2, ba.data());
-	dt.a = 'c';
-	dt.b = 10;
-	dt.c = 0.00000001;
-	mp1["test"] = dt;
-	QFile f1("instmap.dat");
-	f1.open(QIODevice::WriteOnly);
-	QDataStream st(&f1);
-	st << mp1;
-	f1.close();
-
-	QMap<QString, Test> mp2;
-	QFile f2("instmap.dat");
-	f2.open(QIODevice::ReadOnly);
-	QDataStream st2(&f2);
-	st2 >> mp2;
-	f2.close();
-	
-
-	system("pause");
-	//if (true) return;
-	*/
-
-	
+	: QMainWindow(parent) {
 
 
-    ui.setupUi(this);	
-	
+	ui.setupUi(this);
+
 	//添加事件过滤器。
 	ui.centralWidget->installEventFilter(this);
 
@@ -125,7 +50,7 @@ CtpArb::CtpArb(QWidget *parent)
 	//单击套利组合
 	QObject::connect(ui.tableView_arblist, SIGNAL(clicked(QModelIndex)), this, SLOT(ClickArbPortf(QModelIndex)));
 	//提交套利单 ，
-	QObject::connect(ui.pushButton_submit_order, SIGNAL(clicked()), this, SLOT(SubmitArbOrder())); 
+	QObject::connect(ui.pushButton_submit_order, SIGNAL(clicked()), this, SLOT(SubmitArbOrder()));
 
 	//合约列表，反序列化。
 	QFile file("instmap.dat");
@@ -133,14 +58,14 @@ CtpArb::CtpArb(QWidget *parent)
 	QDataStream stream(&file);
 	stream >> g_instMap;
 	//填充模型。
-	FillModelInst(); 
+	FillModelInst();
 
 	/*******套利组合列表*******/
 	//绑定模型。
-	ui.tableView_arblist->setModel(modelArb); 
+	ui.tableView_arblist->setModel(modelArb);
 	//设置表头
 	QStringList arbHeader;
-	arbHeader << "名称" << "合约" << "买"  << "卖";
+	arbHeader << "名称" << "合约" << "买" << "卖";
 	modelArb->setHorizontalHeaderLabels(arbHeader);
 	modelArb->setColumnCount(arbHeader.size()); //设置列数
 	ui.tableView_arblist->verticalHeader()->hide();//隐藏行号。
@@ -165,7 +90,7 @@ CtpArb::CtpArb(QWidget *parent)
 	ui.tableView_ordlist->setModel(modelOrd);
 	//设置表头
 	QStringList ordHeader;
-	ordHeader << "订单编号" << "条件" << "状态" << "操作" ;
+	ordHeader << "订单编号" << "条件" << "状态" << "操作";
 	modelOrd->setHorizontalHeaderLabels(ordHeader);
 	modelOrd->setColumnCount(ordHeader.size());//设置列数
 	ui.tableView_ordlist->verticalHeader()->hide();//隐藏行号。
@@ -178,7 +103,7 @@ CtpArb::CtpArb(QWidget *parent)
 	file2.open(QIODevice::ReadOnly);
 	QDataStream stream2(&file2);
 	QStandardItemModel it;
-	stream2 >> ordList; 
+	stream2 >> ordList;
 	//填充订单列表模型，
 	for (int i = 0; i < ordList.count(); i++) {
 		AddToModelOrderTable(ordList[i]);
@@ -204,7 +129,7 @@ CtpArb::CtpArb(QWidget *parent)
 	popMenu = new QMenu(ui.tableView_arblist);
 	popMenu->addAction(delAction);
 	//添加右键菜单事件绑定。
-	connect(ui.tableView_arblist, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(ShowContextMenu(QPoint))); 
+	connect(ui.tableView_arblist, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(ShowContextMenu(QPoint)));
 	//添加删除事件处理函数。
 	QObject::connect(delAction, SIGNAL(triggered()), this, SLOT(DeleteArbPortf()));
 
@@ -212,16 +137,15 @@ CtpArb::CtpArb(QWidget *parent)
 
 
 //析构函数。
-CtpArb::~CtpArb()
-{
+CtpArb::~CtpArb() {
 	//保存合约信息，
 	/**/
 	QFile file("instmap.dat");
 	file.open(QIODevice::WriteOnly);
 	QDataStream stream(&file);
-	stream <<g_instMap;
+	stream << g_instMap;
 	file.close();
-	
+
 
 	//保存历史套利组合列表。(反序列化)
 	QFile file1("arblist.dat");
@@ -239,8 +163,7 @@ CtpArb::~CtpArb()
 }
 
 //事件过滤器，主要是监听鼠标点击合约树控件一外的区域自动关闭，
-bool CtpArb::eventFilter(QObject *target, QEvent *event)
-{
+bool CtpArb::eventFilter(QObject *target, QEvent *event) {
 	//treeInst控件显示状态下才去处理。
 	if (treeInst != nullptr && treeInst->isVisible()) {
 		if (event->type() == QEvent::MouseButtonPress && target->objectName() != treeInst->viewport()->objectName()) {
@@ -254,8 +177,7 @@ bool CtpArb::eventFilter(QObject *target, QEvent *event)
 }
 
 //显示登录界面 。
-void CtpArb::ShowLoginForm()
-{
+void CtpArb::ShowLoginForm() {
 	cout << "hello" << endl;
 	fm = new LoginForm();
 	(*fm).setWindowModality(Qt::ApplicationModal);
@@ -264,11 +186,10 @@ void CtpArb::ShowLoginForm()
 
 
 //显示合约信息。 
-void CtpArb::ShowInstrument()
-{
-	cout << "中国";	
+void CtpArb::ShowInstrument() {
+	cout << "中国";
 	QTextCodec *codec = QTextCodec::codecForName("UTF-8");
-	QTextCodec::setCodecForLocale(QTextCodec::codecForLocale());	
+	QTextCodec::setCodecForLocale(QTextCodec::codecForLocale());
 	//定义树形控件，
 	treeInst = new QTreeView(ui.tabWidget_arb_edit);
 	treeInst->setHeaderHidden(true); //隐藏头部。
@@ -286,7 +207,7 @@ void CtpArb::ShowInstrument()
 	QPushButton *btn = qobject_cast<QPushButton *>(sender());
 	if (btn->objectName() == "pushButton_ins1") {
 		setInsEdit = ui.lineEdit_ins1;
-	}else if(btn->objectName() == "pushButton_ins2") {
+	} else if (btn->objectName() == "pushButton_ins2") {
 		setInsEdit = ui.lineEdit_ins2;
 	}
 	QObject::connect(treeInst, SIGNAL(clicked(QModelIndex)), this, SLOT(ChooseInstrument(QModelIndex)));
@@ -294,8 +215,7 @@ void CtpArb::ShowInstrument()
 
 
 //选择合约 。
-void CtpArb::ChooseInstrument(QModelIndex idx)
-{
+void CtpArb::ChooseInstrument(QModelIndex idx) {
 	QStandardItem* item = modelIns->itemFromIndex(idx);
 	if (!item->hasChildren()) { //将合约显示在下拉框中。
 		setInsEdit->setText(item->text());
@@ -385,16 +305,18 @@ ArbOrder CtpArb::FillArbOrder() {
 
 
 //添加套利组合
-void CtpArb::AddArbPortf()
-{
+void CtpArb::AddArbPortf() {
 	//校验表单。
 	if (!ui.lineEdit_arb_name->hasAcceptableInput()) {
 		QMessageBox::warning(this, "错误", "组件名称不能为空");
 		return;
-	}else if (!ui.lineEdit_open_val->hasAcceptableInput() || !ui.lineEdit_close_val->hasAcceptableInput()) {
+	} else if (!ui.lineEdit_open_val->hasAcceptableInput() || !ui.lineEdit_close_val->hasAcceptableInput()) {
 		QMessageBox::warning(this, "错误", "公式条件有误");
 		return;
-	}else if (!ui.lineEdit_ins1->hasAcceptableInput() || !ui.lineEdit_ins2->hasAcceptableInput()) {
+	} else if (!ui.lineEdit_ins1->hasAcceptableInput() || !ui.lineEdit_ins2->hasAcceptableInput()) {
+		QMessageBox::warning(this, "错误", "合约不能为空");
+		return;
+	} else if (!g_instMap.contains(ui.lineEdit_ins1->text()) || !g_instMap.contains(ui.lineEdit_ins2->text())) {
 		QMessageBox::warning(this, "错误", "合约编码有误");
 		return;
 	}
@@ -415,8 +337,7 @@ void CtpArb::AddArbPortf()
 }
 
 //点击已经添加的套利组件。
-void CtpArb::ClickArbPortf(QModelIndex idx)
-{
+void CtpArb::ClickArbPortf(QModelIndex idx) {
 	ArbPortf arb = arbList[idx.row()];
 	ui.lineEdit_arb_name->setText(arb.Name);
 	//合约A
@@ -452,25 +373,22 @@ void CtpArb::ClickArbPortf(QModelIndex idx)
 }
 
 //显示右键菜单。
-void CtpArb::ShowContextMenu(QPoint pos)
-{
+void CtpArb::ShowContextMenu(QPoint pos) {
 	QModelIndex index = ui.tableView_arblist->indexAt(pos);
-	if (index.isValid()){
+	if (index.isValid()) {
 		popMenu->exec(QCursor::pos()); // 菜单出现的位置为当前鼠标的位置
 	}
 }
 
 //删除套利组合。
-void CtpArb::DeleteArbPortf()
-{
+void CtpArb::DeleteArbPortf() {
 	QModelIndex idx = ui.tableView_arblist->currentIndex();
 	int row_num = idx.row();
 	modelArb->removeRow(row_num);
 	arbList.removeAt(row_num);
 }
 //删除套利订单。
-void CtpArb::DeleteArbOrder()
-{
+void CtpArb::DeleteArbOrder() {
 	QModelIndex idx = ui.tableView_ordlist->currentIndex();
 
 	//删除订单列表。
@@ -481,7 +399,7 @@ void CtpArb::DeleteArbOrder()
 			break;
 		}
 	}
-	
+
 	//注意这段放下面，否则会出错，因为上面代码用到了modelOrd
 	//删除表单模型中对应的3行。
 	modelOrd->removeRows(idx.row(), 3);
@@ -530,13 +448,14 @@ int CtpArb::getNewOrdId() {
 }
 
 //提交套利单 。
-void CtpArb::SubmitArbOrder()
-{
+void CtpArb::SubmitArbOrder() {
 	if (!ui.lineEdit_open_val->hasAcceptableInput() || !ui.lineEdit_close_val->hasAcceptableInput()) {
 		QMessageBox::warning(this, "错误", "公式条件有误");
 		return;
-	}
-	else if (!ui.lineEdit_ins1->hasAcceptableInput() || !ui.lineEdit_ins2->hasAcceptableInput()) {
+	} else if (!ui.lineEdit_ins1->hasAcceptableInput() || !ui.lineEdit_ins2->hasAcceptableInput()) {
+		QMessageBox::warning(this, "错误", "合约编码有误");
+		return;
+	} else if (!g_instMap.contains(ui.lineEdit_ins1->text()) || !g_instMap.contains(ui.lineEdit_ins2->text())) {
 		QMessageBox::warning(this, "错误", "合约编码有误");
 		return;
 	}
@@ -549,8 +468,6 @@ void CtpArb::SubmitArbOrder()
 
 	//添加到模型。
 	AddToModelOrderTable(ord);
-
-
 
 }
 

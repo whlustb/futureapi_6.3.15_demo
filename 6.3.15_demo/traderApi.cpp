@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "define.h"
 
+
 CThostFtdcTraderApi* CTraderApi::CreateFtdcTraderApi(const char *pszFlowPath /*= ""*/)
 {
 	return m_pApi = CThostFtdcTraderApi::CreateFtdcTraderApi(pszFlowPath);
