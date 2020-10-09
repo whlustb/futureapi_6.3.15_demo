@@ -15,6 +15,8 @@
 #include "ThostApiStruct_Serielize.h"
 #include "CtpArbFunc.h"
 
+#include <QJSEngine>
+
 
 using namespace std;
 
@@ -37,6 +39,8 @@ extern LoginForm* w_login;
 
 CtpArb::CtpArb(QWidget *parent)
 	: QMainWindow(parent) {
+	 
+	
 
 	ui.setupUi(this);
 	//添加事件过滤器。
@@ -75,7 +79,6 @@ void CtpArb::Init() {
 	QObject::connect(this, SIGNAL(signal_UpdatePositionProfit(QString, double)), this, SLOT(UpdatePositionProfit(QString, double)));
 	//绑定持仓更新套利组合价差（行情变化时）
 	QObject::connect(this, SIGNAL(signal_UpdateArbPrice(QString, double)), this, SLOT(UpdateArbPrice(QString, double)));
-
 
 
 	//合约列表，反序列化。
@@ -180,6 +183,10 @@ void CtpArb::Init() {
 	//校验为空，
 	QRegExpValidator* noEmptyValid = new QRegExpValidator(QRegExp(".*\\S+.*"), this);
 	ui.lineEdit_arb_name->setValidator(noEmptyValid);
+	//检验公式内容，（只能用A、B、(),数字，和运算符号）
+	QRegExpValidator* formulaValid = new QRegExpValidator(QRegExp("[AB0-9\\(\\)\\+\\-\\*\\/ ]+"), this);
+	ui.lineEdit_open_formula->setValidator(formulaValid);
+	ui.lineEdit_close_formula->setValidator(formulaValid);
 
 	//添加右键菜单，
 	ui.tableView_arblist->setContextMenuPolicy(Qt::CustomContextMenu); //必须设置为个才能捕捉右键点击事件。
@@ -376,15 +383,25 @@ void CtpArb::AddArbPortf() {
 		QMessageBox::warning(this, "错误", "合约编码有误");
 		return;
 	}
-
 	
+	//通过算术静态式计算、来判断公式是否有误。
+	QString open_formular = ui.lineEdit_open_formula->text();
+	open_formular.replace("A", "1").replace("B", "2");
+	// 执行Js代码
+	QJSEngine* jsEngine = new QJSEngine(this);
+	QJSValue jval = jsEngine->evaluate(open_formular);
+	if (jval.isError()){
+		QMessageBox::warning(this, "错误", "公式有误"+jval.toString());
+		return;
+	}
+
 
 	//将表单数据填到套利组合对象。
 	ArbPortf item = FillArbPortf();
 
+
 	//添加到列表。
 	arbList.append(item);
-
 	//组合列表模型数据。
 	int row = modelArb->rowCount();
 	modelArb->setItem(row, 0, new QStandardItem(item.Name));

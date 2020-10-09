@@ -6,6 +6,7 @@
 
 #include "CWorker.h"
 #include<iostream>
+#include <QJSEngine>
 
 #include <windows.h>
 using namespace std;
@@ -16,6 +17,11 @@ QtWidgetsApplication1::QtWidgetsApplication1(QWidget *parent)
     ui.setupUi(this);
 
 	
+	QJSEngine* jsEngine = new QJSEngine(this);
+	// 执行Js代码
+	QJSValue value = jsEngine->evaluate("333+3");
+	int aaa  = value.toInt();
+
 
 	//打印出主线程
 	qDebug() << "main thread:" << QThread::currentThreadId();

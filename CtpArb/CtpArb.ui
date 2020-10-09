@@ -814,7 +814,7 @@
             <widget class="QPushButton" name="pushButton_add_arb">
              <property name="geometry">
               <rect>
-               <x>40</x>
+               <x>50</x>
                <y>150</y>
                <width>101</width>
                <height>23</height>

@@ -2,9 +2,13 @@
 #include <QtWidgets/QApplication>
 #include <QDebug>
 #include <string>
+
  
 int main(int argc, char *argv[])
 {
+
+
+
 	struct MyStruct {
 		int a = 10;
 	};

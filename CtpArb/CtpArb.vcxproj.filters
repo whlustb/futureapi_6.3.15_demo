@@ -96,6 +96,9 @@
     <QtUic Include="CtpArb.ui">
       <Filter>Resource Files</Filter>
     </QtUic>
+    <QtUic Include="MainWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\6.3.15_demo\define.h">
