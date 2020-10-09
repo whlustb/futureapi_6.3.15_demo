@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testprogram", "6.3.15_demo\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CtpArb", "CtpArb\CtpArb.vcxproj", "{9FF54D95-6DC9-493C-B334-D1676BBDA0C5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QtWidgetsApplication1", "QtWidgetsApplication1\QtWidgetsApplication1.vcxproj", "{77B82E19-233F-46CA-A4DC-0EA9B1A672BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,12 @@ Global
 		{9FF54D95-6DC9-493C-B334-D1676BBDA0C5}.Release|x64.Build.0 = Debug|x64
 		{9FF54D95-6DC9-493C-B334-D1676BBDA0C5}.Release|x86.ActiveCfg = Debug|Win32
 		{9FF54D95-6DC9-493C-B334-D1676BBDA0C5}.Release|x86.Build.0 = Debug|Win32
+		{77B82E19-233F-46CA-A4DC-0EA9B1A672BD}.Debug|x64.ActiveCfg = Debug|x64
+		{77B82E19-233F-46CA-A4DC-0EA9B1A672BD}.Debug|x64.Build.0 = Debug|x64
+		{77B82E19-233F-46CA-A4DC-0EA9B1A672BD}.Debug|x86.ActiveCfg = Debug|x64
+		{77B82E19-233F-46CA-A4DC-0EA9B1A672BD}.Release|x64.ActiveCfg = Release|x64
+		{77B82E19-233F-46CA-A4DC-0EA9B1A672BD}.Release|x64.Build.0 = Release|x64
+		{77B82E19-233F-46CA-A4DC-0EA9B1A672BD}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

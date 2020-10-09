@@ -1,9 +1,11 @@
 #pragma once
 #include "HandlerVars.h"
 #include "HandlerQuote.h"
+#include "CtpArb.h"
 
 using namespace std;
-FILE *logfile;
+
+extern CtpArb* w_main;
 
 // 当客户端与交易托管系统建立起通信连接，客户端需要进行登录
 void HandlerQuote::OnFrontConnected()
@@ -98,6 +100,7 @@ void HandlerQuote::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecif
 	LOG("</OnRspSubMarketData>\n");
 }
 
+
 ///深度行情通知
 void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
@@ -112,10 +115,29 @@ void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMa
 		LOG("\tVolume = [%d]\n", pDepthMarketData->Volume);
 		LOG("\tTurnover = [%.8lf]\n", pDepthMarketData->Turnover);
 		LOG("\tOpenInterest = [%d]\n", pDepthMarketData->OpenInterest);
+
+		QString inst_id = QString(pDepthMarketData->InstrumentID);
+		CThostFtdcDepthMarketDataField old = g_depthMap[inst_id];
+		g_depthMap[inst_id] = *pDepthMarketData;
+		if (old.LastPrice != pDepthMarketData->LastPrice) { //最新价有变化时，更新界面。
+			//通知更新持仓盈亏。
+			emit w_main->signal_UpdatePositionProfit(inst_id, pDepthMarketData->LastPrice);
+
+			//通知更新套利组件。
+			emit w_main->signal_UpdateArbPrice(inst_id, pDepthMarketData->LastPrice);
+		}
+		
+
+		
+		
+
+		//emit w_main->signal_Test(QString(inst_id), pDepthMarketData->LastPrice);
 	}
 	LOG("</OnRtnDepthMarketData>\n");
 
 	//处理套利订单。
+
+
 
 }
 

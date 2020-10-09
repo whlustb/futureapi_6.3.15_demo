@@ -93,10 +93,14 @@ extern HANDLE g_qEvent;
 
 /************声明全局API及SPI对象*******************************/
 extern CThostFtdcMdApi* md_api; //行情API.
-extern HandlerQuote* m_spi; //行情SPI.
+extern HandlerQuote* md_spi; //行情SPI.
 extern CTraderApi* api; //交易API
 extern HandlerTrade* spi; //交易SPI.
 
 /******声明全局变量、保留部分CTP返回信息，******/
-extern QMap<QString, CThostFtdcInstrumentField> g_instMap;
+extern QMap<QString, CThostFtdcInstrumentField> g_instMap; //合约信息。
+extern QList<CThostFtdcInvestorPositionField> g_posList; //持仓信息。
+extern QMap<QString, CThostFtdcDepthMarketDataField> g_depthMap; //最新的合约深度行情。
+
+
 

@@ -15,7 +15,17 @@ class CtpArb : public QMainWindow
 
 public:
     CtpArb(QWidget *parent = Q_NULLPTR);
+	void Init();
 	~CtpArb();
+	void SubscribeOrderInst(); //订阅交易合约行情。
+
+	void SubscribePosInst();
+
+//信号函数。
+signals:
+	void signal_UpdatePositionProfit(QString instrument_id, double last_price); //更新持仓盈亏(价格有更新时)
+	void signal_UpdateArbPrice(QString instrument_id, double last_price); //更新套利组件价差(价格有更新时)
+
 
 //槽函数定义。	
 public slots:
@@ -28,6 +38,12 @@ public slots:
 	void DeleteArbPortf(); //删除套利组合。
 	void DeleteArbOrder(); //删除套利订单。
 	void SubmitArbOrder(); //提交套利单。
+
+	//价格有更新时，行情回报函数，调用的槽函数
+	void UpdatePositionProfit(QString instrument_id, double last_price); //更新持仓盈亏(价格有更新时)
+	void UpdateArbPrice(QString instrument_id, double last_price); //更新套利组件价差(价格有更新时)
+
+
 
 protected:
 	bool eventFilter(QObject *obj, QEvent *e); //事件过滤器，

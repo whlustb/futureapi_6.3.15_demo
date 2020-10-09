@@ -22,23 +22,41 @@ using namespace std;
 QStandardItemModel *modelIns = new QStandardItemModel(); //合约列表模型。
 QStandardItemModel *modelArb = new QStandardItemModel(); ; //套利组合列表模型
 QStandardItemModel *modelOrd = new QStandardItemModel(); ; //订单列表模型
+QStandardItemModel *modelPos = new QStandardItemModel(); ; //持仓列表模型
 QList<ArbPortf> arbList; //套利组合列表。
 QList<ArbOrder> ordList; //订单列表。
-LoginForm* fm; //登录表单，
+
+
 QTreeView *treeInst; //合约树。
 QLineEdit* setInsEdit; //标记当前要设置的是哪个合约。
 QMenu* popMenu; //套利组件上的右键菜单。
 
+QMap<char,QString> DirectpMap{{'1', "NA"},  {'2', "买"},  {'3', "卖"}};
+
+extern LoginForm* w_login;
+
 CtpArb::CtpArb(QWidget *parent)
 	: QMainWindow(parent) {
 
-
 	ui.setupUi(this);
-
 	//添加事件过滤器。
 	ui.centralWidget->installEventFilter(this);
 
-	/********集中添加信号绑定********/
+}
+
+//初始化函数。要单独调用，不能放到构造函数，因为里边的一些代码用到了对象本身指针，而构造函数调用时，对象本身还是个空的。
+void CtpArb::Init() {
+	//查询合约
+	//strcpy_s(g_chInstrumentID, "rb2101"); //留空时，查询全部合约 。查询后的合约，是自动保存下来的，下次订阅时，也是订阅查询的这些合约 。
+	//spi->ReqQryInstrument();
+	//WaitForSingleObject(g_qEvent, INFINITE);
+	//填充合约树。
+	//FillModelInst();
+
+
+	/********集中绑定槽函数（界面操作响应类）********/
+	//登录按扭。
+	QObject::connect(this, SIGNAL(triggered()), this, SLOT(ShowLoginForm()));
 	//登录按扭。
 	QObject::connect(ui.actionLogin, SIGNAL(triggered()), this, SLOT(ShowLoginForm()));
 	//点击合约1按扭
@@ -51,6 +69,14 @@ CtpArb::CtpArb(QWidget *parent)
 	QObject::connect(ui.tableView_arblist, SIGNAL(clicked(QModelIndex)), this, SLOT(ClickArbPortf(QModelIndex)));
 	//提交套利单 ，
 	QObject::connect(ui.pushButton_submit_order, SIGNAL(clicked()), this, SLOT(SubmitArbOrder()));
+
+	/*********绑定自定义信号槽函数（回调函数中触发）********/
+	//绑定持仓更新槽函数（行情变化时）
+	QObject::connect(this, SIGNAL(signal_UpdatePositionProfit(QString, double)), this, SLOT(UpdatePositionProfit(QString, double)));
+	//绑定持仓更新套利组合价差（行情变化时）
+	QObject::connect(this, SIGNAL(signal_UpdateArbPrice(QString, double)), this, SLOT(UpdateArbPrice(QString, double)));
+
+
 
 	//合约列表，反序列化。
 	QFile file("instmap.dat");
@@ -108,6 +134,40 @@ CtpArb::CtpArb(QWidget *parent)
 	for (int i = 0; i < ordList.count(); i++) {
 		AddToModelOrderTable(ordList[i]);
 	}
+	//订阅交易中的合约。
+	SubscribeOrderInst();
+
+	/************持仓列表***********************/
+	//绑定模型。
+	ui.tableView_poslist->setModel(modelPos);
+	//设置表头
+	QStringList posHeader;
+	posHeader << "合约" << "方向" << "持仓" << "持仓均价" << "最新价" << "浮动盈亏" << "今持仓" << "昨持仓";
+	modelPos->setHorizontalHeaderLabels(posHeader);
+	modelPos->setColumnCount(posHeader.size()); //设置列数
+	ui.tableView_poslist->verticalHeader()->hide();//隐藏行号。
+	ui.tableView_poslist->horizontalHeader()->setStyleSheet("border:1px solid #aaaaaa"); //设置表头颜色。
+	//获取持仓信息。
+	spi->ReqQryInvestorPosition();
+	WaitForSingleObject(g_qEvent, INFINITE);
+	//填充持仓列表列表模型，
+	for (int i = 0; i < g_posList.count(); i++) {
+		CThostFtdcInvestorPositionField item = g_posList[i];
+		int row = modelPos->rowCount();
+		double last_price = 0.0;
+		double cost = item.OpenCost / (item.Position*g_instMap[item.InstrumentID].VolumeMultiple);
+		double profit = (last_price - cost)* item.Position*g_instMap[item.InstrumentID].VolumeMultiple;
+		modelPos->setItem(row, 0, new QStandardItem(QString(item.InstrumentID)));//合约
+		modelPos->setItem(row, 1, new QStandardItem(DirectpMap[item.PosiDirection])); //多空方向
+		modelPos->setItem(row, 2, new QStandardItem(QString::number(item.Position))); //持仓
+		modelPos->setItem(row, 3, new QStandardItem(QString::number(cost))); //持仓均价
+		modelPos->setItem(row, 4, new QStandardItem(QString::number(last_price))); //最新价
+		modelPos->setItem(row, 5, new QStandardItem(QString::number(profit))); //浮盈
+		modelPos->setItem(row, 6, new QStandardItem(QString::number(item.TodayPosition))); //今持仓，
+		modelPos->setItem(row, 7, new QStandardItem(QString::number(item.Position - item.TodayPosition))); //昨持仓
+	}
+	//订阅持仓中的合约。
+	SubscribePosInst();
 
 	/*********检验表单数值********/
 	QDoubleValidator* doubleValid = new QDoubleValidator(0, 100.0, 3, this);
@@ -121,7 +181,6 @@ CtpArb::CtpArb(QWidget *parent)
 	QRegExpValidator* noEmptyValid = new QRegExpValidator(QRegExp(".*\\S+.*"), this);
 	ui.lineEdit_arb_name->setValidator(noEmptyValid);
 
-
 	//添加右键菜单，
 	ui.tableView_arblist->setContextMenuPolicy(Qt::CustomContextMenu); //必须设置为个才能捕捉右键点击事件。
 	QAction* delAction = new QAction(this);
@@ -134,7 +193,6 @@ CtpArb::CtpArb(QWidget *parent)
 	QObject::connect(delAction, SIGNAL(triggered()), this, SLOT(DeleteArbPortf()));
 
 }
-
 
 //析构函数。
 CtpArb::~CtpArb() {
@@ -179,9 +237,7 @@ bool CtpArb::eventFilter(QObject *target, QEvent *event) {
 //显示登录界面 。
 void CtpArb::ShowLoginForm() {
 	cout << "hello" << endl;
-	fm = new LoginForm();
-	(*fm).setWindowModality(Qt::ApplicationModal);
-	(*fm).show();
+	w_login->show();
 }
 
 
@@ -320,6 +376,8 @@ void CtpArb::AddArbPortf() {
 		QMessageBox::warning(this, "错误", "合约编码有误");
 		return;
 	}
+
+	
 
 	//将表单数据填到套利组合对象。
 	ArbPortf item = FillArbPortf();
@@ -471,3 +529,63 @@ void CtpArb::SubmitArbOrder() {
 
 }
 
+
+
+//订阅交易中的合约行情，
+void CtpArb::SubscribeOrderInst() {
+	extern QList<ArbOrder> ordList;
+	for (int i = 0; i < ordList.count(); i++) {
+		for (int j = 0; j < ordList[i].OrdLegList.count(); j++) {
+			md_InstrumentID.push_back(ordList[i].OrdLegList[j].InstrumentID.toStdString());
+		}
+	}
+	md_spi->SubscribeMarketData();
+}
+
+//订阅持仓中的合约行情，
+void CtpArb::SubscribePosInst() {
+	for (int i = 0; i < g_posList.count(); i++) {
+		md_InstrumentID.push_back(string(g_posList[i].InstrumentID));
+	}
+	md_spi->SubscribeMarketData();
+}
+
+
+//更新持仓盈亏(价格有更新时)
+void CtpArb::UpdatePositionProfit(QString instrument_id, double last_price) {
+	//填充持仓列表列表模型， 
+	for (int i = 0; i < g_posList.count(); i++) {
+		CThostFtdcInvestorPositionField item = g_posList[i];
+		if (QString(item.InstrumentID) == instrument_id) {
+			double cost = item.OpenCost / (item.Position*g_instMap[item.InstrumentID].VolumeMultiple);
+			double profit = (last_price - cost)* item.Position*g_instMap[item.InstrumentID].VolumeMultiple;
+			if (item.PosiDirection == THOST_FTDC_PD_Short) profit = -profit;
+			modelPos->setItem(i, 4, new QStandardItem(QString::number(last_price))); //最新价
+			modelPos->setItem(i, 5, new QStandardItem(QString::number(profit))); //浮盈
+			
+		}
+	}
+}
+
+//更新套利组件价差(价格有更新时)
+void CtpArb::UpdateArbPrice(QString instrument_id, double last_price) {
+	//填充持仓列表列表模型， 
+	for (int i = 0; i < arbList.count(); i++) {
+		ArbPortf item = arbList[i];
+		for (int j = 0; j < item.LegList.count(); j++) {
+			ArbLeg leg = item.LegList[j];
+			if (QString(leg.InstrumentID) == instrument_id) {
+				//double cost = item.OpenCost / (item.Position*g_instMap[item.InstrumentID].VolumeMultiple);
+				//double profit = (last_price - cost)* item.Position*g_instMap[item.InstrumentID].VolumeMultiple;
+				//if (item.PosiDirection == THOST_FTDC_PD_Short) profit = -profit;
+
+				double last_price = g_depthMap[leg.InstrumentID].LastPrice;
+
+				modelPos->setItem(i, 4, new QStandardItem(QString::number(last_price))); //最新价
+				
+
+
+			}
+		}
+	}
+}

@@ -7,16 +7,15 @@
 #include "HandlerTrade.h"
 #include "HandlerVars.h"
 #include "main.h"
+#include "CtpArbStruct.h"
 
 LoginForm::LoginForm(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
+	setWindowModality(Qt::ApplicationModal);
 
 	system("COLOR 0A");
-	logfile = fopen("syslog.txt", "w");
-
-	
 
 }
 
@@ -25,7 +24,7 @@ void LoginForm::Login()
 {	
 	//初始化API/SPI相关的信息。
 	//定义行情API/SPI
-	md_api->RegisterSpi(m_spi);
+	md_api->RegisterSpi(md_spi);
 	//定义交易API/SPI
 	api->CreateFtdcTraderApi(".\\flow\\");
 	LOG(api->GetApiVersion());
@@ -58,24 +57,16 @@ void LoginForm::Login()
 	spi->ReqUserLogin(g_chBrokerID, g_chUserID, g_chPassword);
 	WaitForSingleObject(g_hEvent, INFINITE);
 
-	//查询合约
-	//strcpy_s(g_chInstrumentID, "rb2101"); //留空时，查询全部合约 。查询后的合约，是自动保存下来的，下次订阅时，也是订阅查询的这些合约 。
-	//spi.ReqQryInstrument();
-	//WaitForSingleObject(g_qEvent, INFINITE);
-	//填充合约树。
-	//FillModelInst();
-
-	//订阅行情
-	//m_spi.SubscribeMarketData();
-	//_getch();
-	//md_api->Release(); 
-
-	//关闭当前窗口。
+	//关闭登录窗口
 	this->close();
+	//显示主窗体。
 	w_main = new CtpArb();
+	w_main->Init();
 	w_main->show();
-
+	
 }
+
+
 
 
 LoginForm::~LoginForm()

@@ -51,7 +51,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="lineEdit_addr_trade">
          <property name="text">
-          <string>tcp://180.168.146.187:10130</string>
+          <string>tcp://180.168.146.187:10101</string>
          </property>
         </widget>
        </item>
@@ -65,7 +65,7 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="lineEdit_addr_md">
          <property name="text">
-          <string>tcp://180.168.146.187:10131</string>
+          <string>tcp://180.168.146.187:10111</string>
          </property>
         </widget>
        </item>

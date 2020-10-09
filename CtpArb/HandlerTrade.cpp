@@ -883,23 +883,80 @@ void HandlerTrade::ReqQryInvestorPosition()
 	CThostFtdcQryInvestorPositionField a = { 0 };
 	strcpy_s(a.BrokerID, g_chBrokerID);
 	strcpy_s(a.InvestorID, g_chInvestorID);
-	string instr;
-	instr.clear();
-	cin.ignore();
-	LOG("请输入合约代码(不输入则为空)：\n");
-	getline(cin, instr);
-	strcpy_s(a.InstrumentID, instr.c_str());
-
-	string exch;
-	exch.clear();
-	cin.ignore();
-	LOG("请输入交易所代码(不输入则为空)：\n");
-	getline(cin, exch);
-	strcpy_s(a.ExchangeID, exch.c_str());
-	//strcpy_s(a.InstrumentID, "SPD");
 	int b = m_pUserApi->ReqQryInvestorPosition(&a, nRequestID++);
 	LOG((b == 0) ? "请求查询投资者持仓......发送成功\n" : "请求查询投资者持仓......发送失败，错误序号=[%d]\n", b);
 }
+
+//请求查询投资者持仓：响应
+void HandlerTrade::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+	if (pInvestorPosition) {
+		g_posList.append(*pInvestorPosition);
+	}
+	
+	LOG("<OnRspQryInvestorPosition>\n");
+	if (pInvestorPosition) {
+		LOG("\tInstrumentID [%s]\n", pInvestorPosition->InstrumentID);
+		LOG("\tBrokerID [%s]\n", pInvestorPosition->BrokerID);
+		LOG("\tInvestorID [%s]\n", pInvestorPosition->InvestorID);
+		LOG("\tTradingDay [%s]\n", pInvestorPosition->TradingDay);
+		LOG("\tExchangeID [%s]\n", pInvestorPosition->ExchangeID);
+		LOG("\tInvestUnitID [%s]\n", pInvestorPosition->InvestUnitID);
+		LOG("\tYdPosition [%d]\n", pInvestorPosition->YdPosition);
+		LOG("\tPosition [%d]\n", pInvestorPosition->Position);
+		LOG("\tLongFrozen [%d]\n", pInvestorPosition->LongFrozen);
+		LOG("\tShortFrozen [%d]\n", pInvestorPosition->ShortFrozen);
+		LOG("\tOpenVolume [%d]\n", pInvestorPosition->OpenVolume);
+		LOG("\tCloseVolume [%d]\n", pInvestorPosition->CloseVolume);
+		LOG("\tSettlementID [%d]\n", pInvestorPosition->SettlementID);
+		LOG("\tCombPosition [%d]\n", pInvestorPosition->CombPosition);
+		LOG("\tCombLongFrozen [%d]\n", pInvestorPosition->CombLongFrozen);
+		LOG("\tCombShortFrozen [%d]\n", pInvestorPosition->CombShortFrozen);
+		LOG("\tTodayPosition [%d]\n", pInvestorPosition->TodayPosition);
+		LOG("\tStrikeFrozen [%d]\n", pInvestorPosition->StrikeFrozen);
+		LOG("\tAbandonFrozen [%d]\n", pInvestorPosition->AbandonFrozen);
+		LOG("\tYdStrikeFrozen [%d]\n", pInvestorPosition->YdStrikeFrozen);
+		LOG("\tPosiDirection [%c]\n", pInvestorPosition->PosiDirection);
+		LOG("\tHedgeFlag [%c]\n", pInvestorPosition->HedgeFlag);
+		LOG("\tPositionDate [%c]\n", pInvestorPosition->PositionDate);
+		LOG("\tLongFrozenAmount [%.8lf]\n", pInvestorPosition->LongFrozenAmount);
+		LOG("\tShortFrozenAmount [%.8lf]\n", pInvestorPosition->ShortFrozenAmount);
+		LOG("\tOpenAmount [%.8lf]\n", pInvestorPosition->OpenAmount);
+		LOG("\tCloseAmount [%.8lf]\n", pInvestorPosition->CloseAmount);
+		LOG("\tPositionCost [%.8lf]\n", pInvestorPosition->PositionCost);
+		LOG("\tPreMargin [%.8lf]\n", pInvestorPosition->PreMargin);
+		LOG("\tUseMargin [%.8lf]\n", pInvestorPosition->UseMargin);
+		LOG("\tFrozenMargin [%.8lf]\n", pInvestorPosition->FrozenMargin);
+		LOG("\tFrozenCash [%.8lf]\n", pInvestorPosition->FrozenCash);
+		LOG("\tFrozenCommission [%.8lf]\n", pInvestorPosition->FrozenCommission);
+		LOG("\tCashIn [%.8lf]\n", pInvestorPosition->CashIn);
+		LOG("\tCommission [%.8lf]\n", pInvestorPosition->Commission);
+		LOG("\tCloseProfit [%.8lf]\n", pInvestorPosition->CloseProfit);
+		LOG("\tPositionProfit [%.8lf]\n", pInvestorPosition->PositionProfit);
+		LOG("\tPreSettlementPrice [%.8lf]\n", pInvestorPosition->PreSettlementPrice);
+		LOG("\tSettlementPrice [%.8lf]\n", pInvestorPosition->SettlementPrice);
+		LOG("\tOpenCost [%.8lf]\n", pInvestorPosition->OpenCost);
+		LOG("\tExchangeMargin [%.8lf]\n", pInvestorPosition->ExchangeMargin);
+		LOG("\tCloseProfitByDate [%.8lf]\n", pInvestorPosition->CloseProfitByDate);
+		LOG("\tCloseProfitByTrade [%.8lf]\n", pInvestorPosition->CloseProfitByTrade);
+		LOG("\tMarginRateByMoney [%.8lf]\n", pInvestorPosition->MarginRateByMoney);
+		LOG("\tMarginRateByVolume [%.8lf]\n", pInvestorPosition->MarginRateByVolume);
+		LOG("\tStrikeFrozenAmount [%.8lf]\n", pInvestorPosition->StrikeFrozenAmount);
+		LOG("\tPositionCostOffset [%.8lf]\n", pInvestorPosition->PositionCostOffset);
+	}
+	if (pRspInfo) {
+		LOG("\tErrorMsg [%s]\n", pRspInfo->ErrorMsg);
+		LOG("\tErrorID [%d]\n", pRspInfo->ErrorID);
+	}
+	LOG("\tnRequestID [%d]\n", nRequestID);
+	LOG("\tbIsLast [%d]\n", bIsLast);
+	LOG("</OnRspQryInvestorPosition>\n");
+
+	if (bIsLast) {
+		SetEvent(g_qEvent);
+	}
+};
+
+
 
 //请求查询投资者持仓明细
 void HandlerTrade::ReqQryInvestorPositionDetail()

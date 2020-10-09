@@ -19,7 +19,6 @@
 #include <map>
 
 using namespace std;
-FILE *logfile;
 
 // 报单录入操作是否完成的标志
 // Create a manual reset event with no signal

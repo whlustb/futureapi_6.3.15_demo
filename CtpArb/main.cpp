@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+	FILE *logfile;
+
 	/*
 	char* ch;
 	QString str = "北京";
@@ -32,6 +34,8 @@ int main(int argc, char *argv[])
 
     //CtpArb w;
     //w.show();
+	//w_main->show();
+
 	w_login = new LoginForm();
 	w_login->show();
 

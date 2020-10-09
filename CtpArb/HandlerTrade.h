@@ -153,6 +153,8 @@ public:
 
 	//请求查询投资者持仓
 	void ReqQryInvestorPosition();
+	void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+
 
 	//请求查询投资者持仓明细
 	void ReqQryInvestorPositionDetail();
