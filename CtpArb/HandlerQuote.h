@@ -11,7 +11,6 @@
 #include "DataCollect.h""
 
 #include <conio.h>
-#include "getconfig.h"
 #include "traderApi.h"
 #include "define.h"
 #include "traderSpi.h"

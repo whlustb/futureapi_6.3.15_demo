@@ -10,36 +10,28 @@
 #include "ThostFtdcTraderApi.h"
 #include "ThostFtdcMdApi.h"
 #include <conio.h>
-#include "getconfig.h"
 #include "traderApi.h"
 #include "define.h"
 #include "traderSpi.h"
 #include <vector>
 #include <map>
 #include <QStandardItemModel>
-
 #include "functions.h"
 #include "HandlerQuote.h"
 #include "HandlerTrade.h"
+#include "CtpArbStruct.h"
+#include "OrderWorker.h"
 
 extern FILE *logfile;
 
 
 // 报单录入操作是否完成的标志
-// Create a manual reset event with no signal
+// Create a manual reset event with no signal 
 extern HANDLE g_hEvent;
-/// 会员代码
-extern TThostFtdcBrokerIDType g_chBrokerID;
-/// 交易用户代码
-extern TThostFtdcUserIDType g_chUserID;
-/// 交易用户密码
-extern TThostFtdcPasswordType g_chPassword;
 /// 交易所代码
 extern TThostFtdcExchangeIDType g_chExchangeID;
 ///合约代码
 extern TThostFtdcInstrumentIDType	g_chInstrumentID;
-///投资者代码
-extern TThostFtdcInvestorIDType g_chInvestorID;
 ///预埋撤单编号
 extern TThostFtdcParkedOrderActionIDType	g_chParkedOrderActionID1;
 ///预埋报单编号
@@ -82,12 +74,8 @@ extern TThostFtdcSessionIDType	g_NewSessionID;
 extern TThostFtdcOrderSysIDType	g_chOptionSelfCloseSysID;
 ///期权自对冲引用
 extern TThostFtdcOrderRefType	g_chOptionSelfCloseRef;
-///用户端产品信息
-extern TThostFtdcProductInfoType	g_chUserProductInfo;
-///认证码
-extern TThostFtdcAuthCodeType	g_chAuthCode;
-///App代码
-extern TThostFtdcAppIDType	g_chAppID;
+
+
 //行情处理等候事件，
 extern HANDLE g_qEvent;
 
@@ -100,7 +88,18 @@ extern HandlerTrade* spi; //交易SPI.
 /******声明全局变量、保留部分CTP返回信息，******/
 extern QMap<QString, CThostFtdcInstrumentField> g_instMap; //合约信息。
 extern QList<CThostFtdcInvestorPositionField> g_posList; //持仓信息。
+
+extern QMap<QString, CThostFtdcOrderField> g_liveordMap; //线上挂单信息列表，key:订单ID.
+
 extern QMap<QString, CThostFtdcDepthMarketDataField> g_depthMap; //最新的合约深度行情。
 
+extern QList<ArbPortf> g_arbList; //套利组合列表。
+extern QList<ArbOrder> g_arbordList; //本地套利订单列表。
 
+
+extern ConfigInfo g_config; //全局配置变量。
+extern QList<FrontServer> g_serverList; //服务器IP配置信息。
+
+
+extern OrderWorker* g_orderWorker; //全局配置变量。
 

@@ -13,10 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Form Files">
-      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
-      <Extensions>ui</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
       <Extensions>qrc;*</Extensions>
@@ -25,35 +21,19 @@
     <Filter Include="自定义控件">
       <UniqueIdentifier>{e95999bc-3a16-4860-b8bc-12b10ee85d8f}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <QtRcc Include="CtpArb.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
-    <QtMoc Include="CtpArb.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <ClCompile Include="CtpArb.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <Filter Include="配置文件">
+      <UniqueIdentifier>{9ad9ad39-4fb5-4558-a6f3-b9ce4c6229f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LoginForm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\6.3.15_demo\getconfig.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\6.3.15_demo\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\6.3.15_demo\traderApi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\6.3.15_demo\traderSpi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HandlerVars.cpp">
@@ -77,6 +57,21 @@
     <ClCompile Include="CtpArbFunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="traderApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="traderSpi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OrderWorker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainForm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="LoginForm.h">
@@ -88,55 +83,22 @@
     <QtMoc Include="MyTreeView.h">
       <Filter>自定义控件</Filter>
     </QtMoc>
+    <QtMoc Include="OrderWorker.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="MainForm.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="LoginForm.ui">
-      <Filter>Form Files</Filter>
+      <Filter>UI</Filter>
     </QtUic>
-    <QtUic Include="CtpArb.ui">
-      <Filter>Resource Files</Filter>
-    </QtUic>
-    <QtUic Include="MainWindow.ui">
-      <Filter>Form Files</Filter>
+    <QtUic Include="MainForm.ui">
+      <Filter>UI</Filter>
     </QtUic>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\6.3.15_demo\define.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\getconfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\output.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcMdApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcTraderApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcUserApiDataType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcUserApiStruct.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\traderApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\traderSpi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\6.3.15_demo\DataCollect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -161,18 +123,53 @@
     <ClInclude Include="CtpArbFunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\6.3.15_demo\thostmduserapi_se.lib" />
-    <Library Include="..\6.3.15_demo\thosttraderapi_se.lib" />
-    <Library Include="..\6.3.15_demo\WinDataCollect.lib" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\6.3.15_demo\thostmduserapi_se.dll" />
-    <None Include="..\6.3.15_demo\thosttraderapi_se.dll" />
-    <None Include="..\6.3.15_demo\WinDataCollect.dll" />
-    <None Include="config.ini">
+    <ClInclude Include="traderApi.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="traderSpi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThostFtdcMdApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThostFtdcTraderApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThostFtdcUserApiDataType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThostFtdcUserApiStruct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataCollect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="WinDataCollect.lib" />
+    <Library Include="thostmduserapi_se.lib" />
+    <Library Include="thosttraderapi_se.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.json">
+      <Filter>配置文件</Filter>
     </None>
+    <None Include="WinDataCollect.dll" />
+    <None Include="thostmduserapi_se.dll" />
+    <None Include="thosttraderapi_se.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="CtpArb.qrc">
+      <Filter>UI</Filter>
+    </QtRcc>
   </ItemGroup>
 </Project>

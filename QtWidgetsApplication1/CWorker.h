@@ -6,6 +6,6 @@ class CWorker : public QObject {
 	Q_OBJECT
 
 	public slots:
-	void sayHello(char param[31]);
+	void sayHello(QString);
 };
 

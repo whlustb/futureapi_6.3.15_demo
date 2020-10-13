@@ -1,34 +1,37 @@
-Ôªø#include "CtpArb.h"
-#include <QtWidgets/QApplication>
 #include "main.h"
+#include "MainForm.h"
+#include <QtWidgets/QApplication>
 #include <regex>
-
 #include <conio.h>
 #include <iostream>
 #include <QRegExp>
 #include "functions.h"
 #include "LoginForm.h"
+#include <QTextCodec>
+#include "define.h"
+#include <QThread>
 
 using namespace std;
 
 LoginForm* w_login = nullptr;
-CtpArb* w_main = nullptr;
+MainWindow* w_main = nullptr;
+
+
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-
+	QApplication a(argc, argv);
 	FILE *logfile;
 
 	/*
 	char* ch;
-	QString str = "Âåó‰∫¨";
+	QString str = "±±æ©";
 	QByteArray cdata = str.toLocal8Bit();
-	string ss =  string(cdata); //Ê≠£Â∏∏„ÄÇ
-	char* ch2 = const_cast<char*>(ss.c_str()); //Ê≠£Â∏∏„ÄÇ
-	QString str22 = QString((ch2)); //‰π±Á†ÅÔºå
-	QString str2 = QString(gbk2utf8(ch2)); //Ê≠£Â∏∏Ôºå
-	QString str3  = QString::fromStdString(ss); //‰π±Á†Å„ÄÇ
+	string ss =  string(cdata); //’˝≥£°£
+	char* ch2 = const_cast<char*>(ss.c_str()); //’˝≥£°£
+	QString str22 = QString((ch2)); //¬“¬Î£¨
+	QString str2 = QString(gbk2utf8(ch2)); //’˝≥££¨
+	QString str3  = QString::fromStdString(ss); //¬“¬Î°£
 	_getch();
 	*/
 

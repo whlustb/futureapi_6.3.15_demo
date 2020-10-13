@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>420</width>
-    <height>287</height>
+    <width>338</width>
+    <height>250</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,63 +48,42 @@
        <property name="bottomMargin">
         <number>10</number>
        </property>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_addr_trade">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>tcp://180.168.146.187:10101</string>
+          <string>服务器</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboBox_server">
+         <property name="currentText">
+          <string/>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>行情地址</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit_addr_md">
-         <property name="text">
-          <string>tcp://180.168.146.187:10111</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>BrokenId</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_broker_id">
-         <property name="text">
-          <string>9999</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
           <string>用户名</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="1" column="1">
         <widget class="QLineEdit" name="lineEdit_username">
          <property name="text">
           <string>101073</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
           <string>密码</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="2" column="1">
         <widget class="QLineEdit" name="lineEdit_password">
          <property name="text">
           <string>830511login</string>
@@ -114,17 +93,10 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="3" column="1">
         <widget class="QPushButton" name="pushButton_login">
          <property name="text">
           <string>登录</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>交易地址</string>
          </property>
         </widget>
        </item>

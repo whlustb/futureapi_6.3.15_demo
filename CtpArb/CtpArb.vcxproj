@@ -48,7 +48,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\ProgramData\boost_1_74_0;$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\ProgramData\boost_1_74_0;$(Qt_INCLUDEPATH_);.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>E:\ProgramData\boost_1_74_0\lib64-msvc-14.1;$(Qt_LIBPATH_);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -95,45 +95,37 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CtpArbFunc.cpp" />
+    <ClCompile Include="OrderWorker.cpp" />
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="MyComboBox.cpp" />
     <ClCompile Include="MyTreeView.cpp" />
-    <QtRcc Include="CtpArb.qrc" />
-    <QtUic Include="CtpArb.ui" />
-    <QtMoc Include="CtpArb.h" />
-    <ClCompile Include="..\6.3.15_demo\getconfig.cpp" />
-    <ClCompile Include="..\6.3.15_demo\stdafx.cpp">
+    <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\6.3.15_demo\traderApi.cpp" />
-    <ClCompile Include="..\6.3.15_demo\traderSpi.cpp" />
-    <ClCompile Include="CtpArb.cpp" />
+    <ClCompile Include="traderApi.cpp" />
+    <ClCompile Include="traderSpi.cpp" />
+    <QtRcc Include="CtpArb.qrc" />
+    <QtUic Include="MainForm.ui" />
+    <QtMoc Include="MainForm.h" />
+    <ClCompile Include="MainForm.cpp" />
     <ClCompile Include="HandlerQuote.cpp" />
     <ClCompile Include="HandlerTrade.cpp" />
     <ClCompile Include="HandlerVars.cpp" />
     <ClCompile Include="LoginForm.cpp" />
     <ClCompile Include="main.cpp" />
     <QtUic Include="LoginForm.ui" />
-    <QtUic Include="MainWindow.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="LoginForm.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\6.3.15_demo\DataCollect.h" />
-    <ClInclude Include="..\6.3.15_demo\define.h" />
-    <ClInclude Include="..\6.3.15_demo\getconfig.h" />
-    <ClInclude Include="..\6.3.15_demo\output.h" />
-    <ClInclude Include="..\6.3.15_demo\stdafx.h" />
-    <ClInclude Include="..\6.3.15_demo\targetver.h" />
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcMdApi.h" />
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcTraderApi.h" />
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcUserApiDataType.h" />
-    <ClInclude Include="..\6.3.15_demo\ThostFtdcUserApiStruct.h" />
-    <ClInclude Include="..\6.3.15_demo\traderApi.h" />
-    <ClInclude Include="..\6.3.15_demo\traderSpi.h" />
     <ClInclude Include="CtpArbFunc.h" />
+    <ClInclude Include="DataCollect.h" />
+    <QtMoc Include="OrderWorker.h" />
+    <ClInclude Include="define.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
     <ClInclude Include="ThostApiStruct_Serielize.h" />
     <ClInclude Include="CtpArbStruct.h" />
     <ClInclude Include="functions.h" />
@@ -141,19 +133,25 @@
     <ClInclude Include="HandlerTrade.h" />
     <ClInclude Include="HandlerVars.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="ThostFtdcMdApi.h" />
+    <ClInclude Include="ThostFtdcTraderApi.h" />
+    <ClInclude Include="ThostFtdcUserApiDataType.h" />
+    <ClInclude Include="ThostFtdcUserApiStruct.h" />
+    <ClInclude Include="traderApi.h" />
+    <ClInclude Include="traderSpi.h" />
     <QtMoc Include="MyTreeView.h" />
     <QtMoc Include="MyComboBox.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\6.3.15_demo\thostmduserapi_se.lib" />
-    <Library Include="..\6.3.15_demo\thosttraderapi_se.lib" />
-    <Library Include="..\6.3.15_demo\WinDataCollect.lib" />
+    <Library Include="thostmduserapi_se.lib" />
+    <Library Include="thosttraderapi_se.lib" />
+    <Library Include="WinDataCollect.lib" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\6.3.15_demo\thostmduserapi_se.dll" />
-    <None Include="..\6.3.15_demo\thosttraderapi_se.dll" />
-    <None Include="..\6.3.15_demo\WinDataCollect.dll" />
-    <None Include="config.ini" />
+    <None Include="config.json" />
+    <None Include="thostmduserapi_se.dll" />
+    <None Include="thosttraderapi_se.dll" />
+    <None Include="WinDataCollect.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
@@ -161,4 +159,9 @@
   </ImportGroup>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties config_1json__JSONSchema="" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

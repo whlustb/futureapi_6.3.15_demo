@@ -1,18 +1,19 @@
 #pragma once
 #include "HandlerVars.h"
 #include "HandlerQuote.h"
-#include "CtpArb.h"
+#include <QThread>
+#include "MainForm.h"
 
 using namespace std;
 
-extern CtpArb* w_main;
+extern MainWindow* w_main;
 
 // 当客户端与交易托管系统建立起通信连接，客户端需要进行登录
 void HandlerQuote::OnFrontConnected()
 {
-	/*strcpy_s(g_chBrokerID, getConfig("config", "BrokerID").c_str());
-	strcpy_s(g_chUserID, getConfig("config", "UserID").c_str());
-	strcpy_s(g_chPassword, getConfig("config", "Password").c_str());*/
+	/*strcpy_s(g_config.server.BrokerID, getConfig("config", "BrokerID").c_str());
+	strcpy_s(g_config.UserID, getConfig("config", "UserID").c_str());
+	strcpy_s(g_config.Password, getConfig("config", "Password").c_str());*/
 	ReqUserLogin();
 }
 
@@ -104,9 +105,16 @@ void HandlerQuote::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecif
 ///深度行情通知
 void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
-	LOG("<OnRtnDepthMarketData>\n");
+	//QThread::msleep(10 * 1000);
+
+	//QDateTime dateTime = QDateTime::currentDateTime();
+	//LOG(dateTime.toString("yyyy/mm/dd, hh:mm:ss.zzz").toStdString().c_str());
+	//if (true) return;
+
+	//LOG("<OnRtnDepthMarketData>\n");
 	if (pDepthMarketData)
 	{
+		/*
 		LOG("\tInstrumentID = [%s]\n", pDepthMarketData->InstrumentID);
 		LOG("\tExchangeID = [%s]\n", pDepthMarketData->ExchangeID);
 		LOG("\tLastPrice = [%.8lf]\n", pDepthMarketData->LastPrice);
@@ -115,6 +123,7 @@ void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMa
 		LOG("\tVolume = [%d]\n", pDepthMarketData->Volume);
 		LOG("\tTurnover = [%.8lf]\n", pDepthMarketData->Turnover);
 		LOG("\tOpenInterest = [%d]\n", pDepthMarketData->OpenInterest);
+		*/
 
 		QString inst_id = QString(pDepthMarketData->InstrumentID);
 		CThostFtdcDepthMarketDataField old = g_depthMap[inst_id];
@@ -125,19 +134,16 @@ void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMa
 
 			//通知更新套利组件。
 			emit w_main->signal_UpdateArbPrice(inst_id, pDepthMarketData->LastPrice);
+			
+			//通知更新
+			emit g_orderWorker->signal_DealArbOrder(inst_id, pDepthMarketData->LastPrice);
 		}
-		
-
 		
 		
 
 		//emit w_main->signal_Test(QString(inst_id), pDepthMarketData->LastPrice);
 	}
-	LOG("</OnRtnDepthMarketData>\n");
-
-	//处理套利订单。
-
-
+	//LOG("</OnRtnDepthMarketData>\n");
 
 }
 
@@ -146,8 +152,7 @@ void HandlerQuote::SubscribeForQuoteRsp()
 {
 	LOG("行情中订阅询价请求\n");
 	char **ppInstrumentID = new char*[50];
-	string g_chInstrumentID = getConfig("config", "InstrumentID");
-	ppInstrumentID[0] = const_cast<char *>(g_chInstrumentID.c_str());
+	ppInstrumentID[0] = const_cast<char *>(g_chInstrumentID); 
 	int result = m_pUserMdApi->SubscribeForQuoteRsp(ppInstrumentID, 1);
 }
 

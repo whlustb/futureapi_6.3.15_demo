@@ -1,13 +1,8 @@
 #include "stdafx.h"
 #include "main.h"
 
-#include <iostream>
-using namespace std;
-
-
 int main()
 {
-
 	system("COLOR 0A");
 	logfile = fopen("syslog.txt", "w");
 
@@ -111,9 +106,6 @@ cir:pUserApi->RegisterSpi(&sh);
 		}
 		case 110:
 		{
-
-			//strcpy_s(g_chInstrumentID, "au2012");
-
 			string g_chFrontMdaddr = getConfig("config", "FrontMdAddr");
 			cout << "g_chFrontMdaddr = " << g_chFrontMdaddr << "\n" << endl;
 			CThostFtdcMdApi  *pUserMdApi = 
@@ -122,9 +114,9 @@ cir:pUserApi->RegisterSpi(&sh);
 			pUserMdApi->RegisterSpi(&ash);
 			pUserMdApi->RegisterFront(const_cast<char *>(g_chFrontMdaddr.c_str()));
 			pUserMdApi->Init();
-			WaitForSingleObject(g_qEvent, INFINITE);
+			WaitForSingleObject(xinhao, INFINITE);
 			sh.ReqQryInstrument();//查询合约
-			WaitForSingleObject(g_qEvent, INFINITE);
+			WaitForSingleObject(xinhao, INFINITE);
 			ash.SubscribeMarketData();//订阅行情
 			_getch();
 			pUserMdApi->Release();
@@ -601,7 +593,7 @@ cir:pUserApi->RegisterSpi(&sh);
 				pUserMdApi->RegisterSpi(&ash);
 				pUserMdApi->RegisterFront(const_cast<char *>(g_chFrontMdaddr.c_str()));
 				pUserMdApi->Init();
-				WaitForSingleObject(g_qEvent, INFINITE);
+				WaitForSingleObject(xinhao, INFINITE);
 				ash.SubscribeMarketData();//行情订阅询价请求
 				sh.ReqForQuoteInsert();//交易请求询价
 				_getch();

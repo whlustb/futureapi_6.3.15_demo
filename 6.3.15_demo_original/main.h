@@ -19,6 +19,7 @@
 #include <map>
 
 using namespace std;
+FILE *logfile;
 
 // 报单录入操作是否完成的标志
 // Create a manual reset event with no signal
@@ -84,7 +85,7 @@ TThostFtdcAuthCodeType	g_chAuthCode;
 ///App代码
 TThostFtdcAppIDType	g_chAppID;
 
-HANDLE g_qEvent = CreateEvent(NULL, false, false, NULL);
+HANDLE xinhao = CreateEvent(NULL, false, false, NULL);
 
 CTraderApi *pUserApi = new CTraderApi;
 
@@ -134,7 +135,7 @@ public:
 				pRspInfo->ErrorID, pRspInfo->ErrorMsg, nRequestID, bIsLast);
 			exit(-1);
 		}
-		SetEvent(g_qEvent);
+		SetEvent(xinhao);
 		//SubscribeMarketData();//订阅行情
 		//SubscribeForQuoteRsp();//询价请求
 	}
@@ -233,7 +234,7 @@ public:
 		LOG("\tnRequestID = [%d]\n", nRequestID);
 		LOG("\tbIsLast = [%d]\n", bIsLast);
 		LOG("</OnRspSubForQuoteRsp>\n");
-		SetEvent(g_qEvent);
+		SetEvent(xinhao);
 	}
 
 
@@ -251,7 +252,7 @@ public:
 			LOG("\tExchangeID = [%s]\n", pForQuoteRsp->ExchangeID);
 		}
 		LOG("</OnRtnForQuoteRsp>\n");
-		SetEvent(g_qEvent);
+		SetEvent(xinhao);
 	}
 
 private:
@@ -1338,7 +1339,7 @@ public:
 		LOG("</OnRspQryInstrument>\n");
 		if (bIsLast)
 		{
-			SetEvent(g_qEvent);
+			SetEvent(xinhao);
 		}
 	}
 

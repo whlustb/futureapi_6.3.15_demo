@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include "define.h"
-#include "getconfig.h"
 #include <map>
 #include <iostream>
 

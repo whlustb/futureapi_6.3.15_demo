@@ -1,4 +1,4 @@
-Ôªø#include "LoginForm.h"
+#include "LoginForm.h"
 #include <windows.h>
 #include <iostream>
 #include <string>
@@ -8,6 +8,16 @@
 #include "HandlerVars.h"
 #include "main.h"
 #include "CtpArbStruct.h"
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QMessageBox>
+
+//≈‰÷√∂‘œÛ°£
+ConfigInfo g_config;
+QList<FrontServer> g_serverList;
+
 
 LoginForm::LoginForm(QWidget *parent)
 	: QWidget(parent)
@@ -17,52 +27,86 @@ LoginForm::LoginForm(QWidget *parent)
 
 	system("COLOR 0A");
 
+	//∂¡»°≈‰÷√Œƒº˛°£
+	QByteArray data;
+	QFile *file = new QFile("config.json");
+	if (file->open(QIODevice::ReadOnly | QIODevice::Text)) {
+		data = file->readAll();
+	}
+	file->close();
+	//Ω‚Œˆ≈‰÷√Œƒº˛Œ™∂‘œÛ°£
+	QJsonDocument jsonDom = QJsonDocument::fromJson(data);
+	QJsonObject root = jsonDom.object();
+	char* a = QStrToCh(root["UserProductInfo"].toString());
+	g_config.UserProductInfo = a;
+
+	g_config.UserProductInfo = QStrToCh(root["UserProductInfo"].toString());
+	g_config.AuthCode = QStrToCh(root["AuthCode"].toString());
+	g_config.AppID = QStrToCh(root["AppID"].toString());
+	QJsonArray server_arr = root["FrontServers"].toArray();
+	for each (QJsonValue val in server_arr) {
+		QJsonObject obj = val.toObject();
+		FrontServer s;
+		s.Name = obj["Name"].toString();
+		s.Addr = QStrToCh(obj["Addr"].toString());
+		s.MdAddr = QStrToCh(obj["MdAddr"].toString());
+		s.BrokerID = QStrToCh(obj["BrokerID"].toString());
+		g_serverList.append(s);
+		ui.comboBox_server->addItem(QString(s.Name));
+	}
 }
 
-//ÁôªÂΩïÊßΩÂáΩÊï∞„ÄÇ
+//µ«¬º≤€∫Ø ˝°£
 void LoginForm::Login()
 {	
-	//ÂàùÂßãÂåñAPI/SPIÁõ∏ÂÖ≥ÁöÑ‰ø°ÊÅØ„ÄÇ
-	//ÂÆö‰πâË°åÊÉÖAPI/SPI
+	//∂®“Â––«ÈAPI/SPI
+	md_api = CThostFtdcMdApi::CreateFtdcMdApi(".\\flow\\md");
+	md_spi = new HandlerQuote(md_api);
 	md_api->RegisterSpi(md_spi);
-	//ÂÆö‰πâ‰∫§ÊòìAPI/SPI
-	api->CreateFtdcTraderApi(".\\flow\\");
-	LOG(api->GetApiVersion());
+	//∂®“ÂΩª“◊API/SPI
+	api = new CTraderApi();
+	api->CreateFtdcTraderApi(".\\flow\\"); //’‚Ãı”Ôæ‰£¨÷˜“™ «Œ™¡À≥ı ºªØapiƒ⁄≤øµƒCThostFtdcTraderApi∂¯µ˜”√µƒ£¨ µº …œÕ‚≤ø÷ª”√api.
+	spi = new HandlerTrade(api);
 	api->RegisterSpi(spi);
+	
+	LOG("API_version: %s", api->GetApiVersion());
 
-	/****Ë°åÊÉÖÁõ∏ÂÖ≥****/
-	string g_chFrontMdaddr = ui.lineEdit_addr_md->text().toStdString();
-	md_api->RegisterFront(const_cast<char *>(g_chFrontMdaddr.c_str()));
+	//±£¥Ê∑˛ŒÒ∆˜≈‰÷√–≈œ¢°£
+	g_config.server = g_serverList[ui.comboBox_server->currentIndex()];
+	g_config.UserID = QStrToCh(ui.lineEdit_username->text());
+	g_config.InvestorID = QStrToCh(ui.lineEdit_username->text());
+	g_config.Password = QStrToCh(ui.lineEdit_password->text());
+
+	/****¡¨Ω”––«È∑˛ŒÒ∆˜****/
+	md_api->RegisterFront(g_config.server.MdAddr);
 	md_api->Init();
-	WaitForSingleObject(g_qEvent, INFINITE);
+	DWORD r = WaitForSingleObject(g_qEvent, 5*1000);
+	if (r != WAIT_OBJECT_0) {
+		QMessageBox::warning(this, QStr("¥ÌŒÛ"), QStr("µ«¬º∑˛ŒÒ∆˜ ß∞‹!"));
+		md_api->Release();
+		return;
+	}
 
-	/****‰∫§ÊòìÁõ∏ÂÖ≥****/
-	string g_chFrontaddr = ui.lineEdit_addr_trade->text().toStdString();
-	//ËÆ¢ÈòÖÂÖ¨Êúâ„ÄÅÁßÅÊúâÊµÅ„ÄÇ
-	api->SubscribePrivateTopic(THOST_TERT_QUICK);
-	api->SubscribePublicTopic(THOST_TERT_QUICK);
-	api->RegisterFront(const_cast<char *>(g_chFrontaddr.c_str()));
+	/****¡¨Ω”Ωª“◊∑˛ŒÒ∆˜****/
+	api->SubscribePrivateTopic(THOST_TERT_QUICK);//∂©‘ƒπ´”–¡˜
+	api->SubscribePublicTopic(THOST_TERT_QUICK); //∂©‘ƒÀΩ”–¡˜°£
+	api->RegisterFront(g_config.server.Addr);
 	api->Init();
 	WaitForSingleObject(g_hEvent, INFINITE);	
-	LOG("‰∫§ÊòìÊó•Êúü:"); 
-	LOG(api->GetTradingDay());
+	LOG("Ωª“◊»’∆⁄:%s", api->GetTradingDay());
 
-	//ÂÆ¢Êà∑Á´ØËÆ§ËØÅ„ÄÇ
+	//øÕªß∂À»œ÷§°£
 	spi->ReqAuthenticate();
 	WaitForSingleObject(g_hEvent, INFINITE);
-	strcpy_s(g_chBrokerID, ui.lineEdit_broker_id->text().toStdString().c_str()); //BrokerId.
-	strcpy_s(g_chUserID, ui.lineEdit_username->text().toStdString().c_str()); //Áî®Êà∑ID.
-	strcpy_s(g_chInvestorID, ui.lineEdit_username->text().toStdString().c_str()); //investorId‰πüËÆæÁΩÆ‰∏∫Áî®Êà∑id.
-	strcpy_s(g_chPassword, ui.lineEdit_password->text().toStdString().c_str()); //ÂØÜÁ†Å„ÄÇ
-	spi->ReqUserLogin(g_chBrokerID, g_chUserID, g_chPassword);
+	spi->ReqUserLogin(g_config.server.BrokerID, g_config.UserID, g_config.Password);
 	WaitForSingleObject(g_hEvent, INFINITE);
 
-	//ÂÖ≥Èó≠ÁôªÂΩïÁ™óÂè£
+	//πÿ±’µ«¬º¥∞ø⁄
 	this->close();
-	//ÊòæÁ§∫‰∏ªÁ™ó‰Ωì„ÄÇ
-	w_main = new CtpArb();
-	w_main->Init();
+	//œ‘ æ÷˜¥∞ÃÂ°£
+	w_main = new MainWindow();
 	w_main->show();
+	w_main->Init();
 	
 }
 

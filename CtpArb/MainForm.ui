@@ -521,7 +521,7 @@
             <widget class="QPushButton" name="pushButton_submit_order">
              <property name="geometry">
               <rect>
-               <x>180</x>
+               <x>190</x>
                <y>150</y>
                <width>141</width>
                <height>23</height>
@@ -575,6 +575,11 @@
                   <string>平仓</string>
                  </property>
                 </item>
+                <item>
+                 <property name="text">
+                  <string>自动开平</string>
+                 </property>
+                </item>
                </widget>
               </item>
               <item>
@@ -603,12 +608,12 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>先腿-A</string>
+                  <string>先手-A</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>先腿-B</string>
+                  <string>先手-B</string>
                  </property>
                 </item>
                </widget>
@@ -923,7 +928,7 @@
          </sizepolicy>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab_3">
          <attribute name="title">
@@ -931,14 +936,19 @@
          </attribute>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
-           <widget class="QTableView" name="tableView_ordlist"/>
+           <widget class="QTableView" name="tableView_arbordlist"/>
           </item>
          </layout>
         </widget>
         <widget class="QWidget" name="tab_4">
          <attribute name="title">
-          <string>其它</string>
+          <string>挂单</string>
          </attribute>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QTableView" name="tableView_liveordlist"/>
+          </item>
+         </layout>
         </widget>
        </widget>
       </widget>
@@ -955,11 +965,17 @@
    </attribute>
    <addaction name="actionLogin"/>
    <addaction name="separator"/>
+   <addaction name="actionUpdateInstrument"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLogin">
    <property name="text">
     <string>登录</string>
+   </property>
+  </action>
+  <action name="actionUpdateInstrument">
+   <property name="text">
+    <string>更新合约</string>
    </property>
   </action>
  </widget>

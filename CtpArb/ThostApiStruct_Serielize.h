@@ -1,13 +1,11 @@
-ï»¿#pragma once
-#pragma execution_character_set("utf-8")
-
+#pragma once
 #include <QDataStream>
 #include "ThostFtdcUserApiStruct.h"
 #include <iostream>
 using namespace std;
 
 
-//ååºåˆ—åŒ–
+//·´ĞòÁĞ»¯
 QDataStream &operator>>(QDataStream& output, char* dt) {
 	QString str;
 	output >> str;
@@ -15,12 +13,12 @@ QDataStream &operator>>(QDataStream& output, char* dt) {
 		strcpy(dt, "");
 	}else {
 		QByteArray bts = str.toLatin1();
-		strcpy(dt, bts.data());//æ³¨æ„è¿™é‡Œæ˜¯å¤åˆ¶ï¼Œä¸èƒ½ç”¨=ï¼Œå¦åˆ™æ˜¯å¾—ä¸åˆ°çš„ã€‚
+		strcpy(dt, bts.data());//×¢ÒâÕâÀïÊÇ¸´ÖÆ£¬²»ÄÜÓÃ=£¬·ñÔòÊÇµÃ²»µ½µÄ¡£
 	}
 	return output;
 };
 
-//ååºåˆ—åŒ–
+//·´ĞòÁĞ»¯
 QDataStream &operator>>(QDataStream& output, char& dt) {
 	QChar c;
 	output >> c;
@@ -28,7 +26,7 @@ QDataStream &operator>>(QDataStream& output, char& dt) {
 	return output;
 };
 
-//åºåˆ—åŒ– 
+//ĞòÁĞ»¯ 
 QDataStream &operator<<(QDataStream& input, const CThostFtdcInstrumentField& dt) {
 	
 	//
@@ -44,7 +42,7 @@ QDataStream &operator<<(QDataStream& input, const CThostFtdcInstrumentField& dt)
 	return input;
 };
 
-//ååºåˆ—åŒ–
+//·´ĞòÁĞ»¯
 QDataStream &operator>>(QDataStream& output, CThostFtdcInstrumentField& dt) {
 	QString InstrumentName;
 	output >> dt.InstrumentID >> dt.ExchangeID >> InstrumentName >> dt.ExchangeInstID >> dt.ProductID >> dt.ProductClass >> dt.DeliveryYear;
@@ -54,7 +52,7 @@ QDataStream &operator>>(QDataStream& output, CThostFtdcInstrumentField& dt) {
 	output >> dt.UnderlyingInstrID;
 	output >> dt.StrikePrice >> dt.OptionsType >> dt.UnderlyingMultiple >> dt.CombinationType;
 
-	//å¿…é¡»è¦è½¬æ¢ä¸€ä¸‹ï¼ŒQStringä¸­å…¨éƒ¨æ˜¯utf-8çš„ï¼Œè€Œè²Œä¼¼char*æˆ–è€…stringç±»å‹çš„è¿˜æ˜¯gbkçš„æ²¡æœ‰å˜ã€‚
+	//±ØĞëÒª×ª»»Ò»ÏÂ£¬QStringÖĞÈ«²¿ÊÇutf-8µÄ£¬¶øÃ²ËÆchar*»òÕßstringÀàĞÍµÄ»¹ÊÇgbkµÄÃ»ÓĞ±ä¡£
 	strcpy(dt.InstrumentName, string(InstrumentName.toLocal8Bit()).data());
 
 	return output;

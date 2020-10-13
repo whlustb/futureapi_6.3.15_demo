@@ -1,5 +1,6 @@
 #include "functions.h"
 #include <windows.h>
+#include <QString>
 
 char * gbk2utf8(const char* gb2312)
 {
@@ -15,5 +16,12 @@ char * gbk2utf8(const char* gb2312)
 	return str;
 }
 
+//将QString复制到char*中。
+char*  QStrToCh(QString str) {
+	QByteArray bts = str.toLatin1();
+	int len = str.count();
+	char* ch = new char[len];
+	strcpy(ch, bts.data());
+	return ch;
 
-
+}

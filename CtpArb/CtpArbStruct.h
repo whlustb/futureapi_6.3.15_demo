@@ -30,8 +30,9 @@ struct ArbLeg {
 
 };
 
-//套利基本配置，
-struct ArbBase {
+///套利组合、
+struct ArbPortf
+{
 	QString Name; //名称。
 	QString Offset; //开、平、自动开平
 	QString SendOrderType; //下单方式：全部同时、主动腿。
@@ -46,11 +47,6 @@ struct ArbBase {
 
 	int Times; //份数，
 	bool Loop; //循环套利。
-};
-
-///套利组合、继承基本配置 + 套利腿的列表。
-struct ArbPortf:public ArbBase
-{
 	QList<ArbLeg> LegList;
 
 	//序列化
@@ -96,7 +92,18 @@ struct OrdLeg:public ArbLeg {
 };
 
 //套利单、继承套利基本配置
-struct ArbOrder :public ArbBase {
+struct ArbOrder{
+	QString Name; //名称。
+	QString Offset; //开、平、自动开平
+	QString SendOrderType; //下单方式：全部同时、主动腿。
+
+	QString CondFormula; //下单条件：公式
+	QString CondOperator; //下单条件。比较符号
+	QString CondVal; //下单条件。比较值
+
+	int Times; //份数，
+	bool Loop; //循环套利。
+
 	int Id; //订单编号。
 	QTime Time; //下单时间
 	QList<OrdLeg> OrdLegList; //套利单腿列表。
@@ -104,8 +111,7 @@ struct ArbOrder :public ArbBase {
 	//序列化
 	friend QDataStream &operator<<(QDataStream& input, const ArbOrder& dt) {
 		input << dt.Name << dt.Offset << dt.SendOrderType \
-			<< dt.OpenCondFormula << dt.OpenCondOperator << dt.OpenCondVal \
-			<< dt.CloseCondFormula << dt.CloseCondOperator << dt.CloseCondVal \
+			<< dt.CondFormula << dt.CondOperator << dt.CondVal \
 			<< dt.Times << dt.Loop;
 		input << dt.Id << dt.Time << dt.OrdLegList;
 		return input;
@@ -114,12 +120,32 @@ struct ArbOrder :public ArbBase {
 	//反序列化
 	friend QDataStream &operator>>(QDataStream& output, ArbOrder& dt) {
 		output >> dt.Name >> dt.Offset >> dt.SendOrderType \
-			>> dt.OpenCondFormula >> dt.OpenCondOperator >> dt.OpenCondVal \
-			>> dt.CloseCondFormula >> dt.CloseCondOperator >> dt.CloseCondVal \
+			>> dt.CondFormula >> dt.CondOperator >> dt.CondVal \
 			>> dt.Times >> dt.Loop;
 		output >> dt.Id >> dt.Time >> dt.OrdLegList;
 		return output;
 	}
+};
+
+
+//前置服务器
+struct FrontServer {
+	QString Name;
+	char* Addr;
+	char* MdAddr;
+	char* BrokerID;
+};
+
+//配置文件结构体。 为了方便使用，全部用了这种char*的，除了name外。
+struct ConfigInfo {
+	char* UserProductInfo;
+	char* AuthCode;
+	char* AppID;
+
+	char* UserID;
+	char* Password;
+	char* InvestorID;
+	FrontServer server;
 
 };
 

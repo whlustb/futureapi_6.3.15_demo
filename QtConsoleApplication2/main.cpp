@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
 	//创建CWorker
 	CWorker* m_pWorker = new CWorker;
-	m_pWorker->moveToThread(m_pThread);
+	//m_pWorker->moveToThread(m_pThread);
 	QObject::connect(this, SIGNAL(sigSayHello(QString)), m_pWorker, SLOT(sayHello(QString)));
 
 	//发射信号
