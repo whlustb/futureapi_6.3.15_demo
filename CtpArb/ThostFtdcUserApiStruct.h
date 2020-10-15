@@ -1378,7 +1378,7 @@ struct CThostFtdcInputOrderField
 };
 
 ///报单
-struct CThostFtdcOrderField
+struct CThostFtdcOrderField 
 {
 	///经纪公司代码
 	TThostFtdcBrokerIDType	BrokerID;

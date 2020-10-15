@@ -21,6 +21,7 @@
 #include "HandlerTrade.h"
 #include "CtpArbStruct.h"
 #include "OrderWorker.h"
+#include "ThostFtdcUserApiStruct.h"
 
 extern FILE *logfile;
 
@@ -89,12 +90,12 @@ extern HandlerTrade* spi; //交易SPI.
 extern QMap<QString, CThostFtdcInstrumentField> g_instMap; //合约信息。
 extern QList<CThostFtdcInvestorPositionField> g_posList; //持仓信息。
 
-extern QMap<QString, CThostFtdcOrderField> g_liveordMap; //线上挂单信息列表，key:订单ID.
+extern QMap<QString, Order> g_orderMap; //普通本地订单信息列表，key:本地订单编号OrderRef.
+extern QMap<QString, CThostFtdcOrderField> g_orderUnfilledMap; //线上未成交订单，key:订单ID, 
 
 extern QMap<QString, CThostFtdcDepthMarketDataField> g_depthMap; //最新的合约深度行情。
 
-extern QList<ArbPortf> g_arbList; //套利组合列表。
-extern QList<ArbOrder> g_arbordList; //本地套利订单列表。
+extern QList<ArbPortf> g_arbPortfList; //套利组合列表。
 
 
 extern ConfigInfo g_config; //全局配置变量。
@@ -103,3 +104,26 @@ extern QList<FrontServer> g_serverList; //服务器IP配置信息。
 
 extern OrderWorker* g_orderWorker; //全局配置变量。
 
+extern int g_OrderRef; //本地订单编号，一直递增。
+extern int g_ArbOrderId; //套利订单编号，一直递增。
+
+
+extern QStandardItemModel *modelIns; //合约列表模型。
+extern QStandardItemModel *modelPosition; //持仓模型
+extern QStandardItemModel *modelArbPortf; //套利组合模型
+extern QStandardItemModel *modelArbOrder; //本地套利单模型
+extern QStandardItemModel *modelOrder; //普通订单模型。
+extern QList<ArbPortf> g_arbPortfList; //套利组合列表。
+extern QMap<QString, ArbOrder> g_arbOrderMap; //套利订单列表。
+
+extern QMap<QString, Order> g_orderMap; //本系统的下单列表。
+extern QMap<QString, CThostFtdcOrderField> g_orderUnfilledMap; //线上未成交订单。
+
+
+extern QMap<char, QString> PosDirectionMap;
+extern QMap<char, QString> OrdDirectionMap;
+extern QMap<char, QString> OrdOffsetMap;
+extern QMap<char, QString> OrdStatusMap;
+
+extern ConfigInfo g_config;
+extern QList<FrontServer> g_serverList;

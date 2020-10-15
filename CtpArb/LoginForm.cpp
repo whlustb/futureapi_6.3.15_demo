@@ -14,10 +14,6 @@
 #include <QJsonArray>
 #include <QMessageBox>
 
-//配置对象。
-ConfigInfo g_config;
-QList<FrontServer> g_serverList;
-
 
 LoginForm::LoginForm(QWidget *parent)
 	: QWidget(parent)
@@ -99,6 +95,10 @@ void LoginForm::Login()
 	spi->ReqAuthenticate();
 	WaitForSingleObject(g_hEvent, INFINITE);
 	spi->ReqUserLogin(g_config.server.BrokerID, g_config.UserID, g_config.Password);
+	WaitForSingleObject(g_hEvent, INFINITE);
+
+	//查询结算单是否确认。
+	spi->ReqQrySettlementInfoConfirm();
 	WaitForSingleObject(g_hEvent, INFINITE);
 
 	//关闭登录窗口

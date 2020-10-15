@@ -2,7 +2,9 @@
 #include <QStandardItem>
 #include "functions.h"
 #include "HandlerVars.h"
-
+#include <QMap>
+#include <QString>
+#include "ThostFtdcUserApiStruct.h"
 
 //添加合约树结点。
 QStandardItem* addTreeItem(QStandardItem *pitem, char* name) {
@@ -13,14 +15,13 @@ QStandardItem* addTreeItem(QStandardItem *pitem, char* name) {
 		}
 	}
 	//不存在时，添加。
-	QStandardItem *item = new QStandardItem(name);
+	QStandardItem *item = new QStandardItem(QString(name));
 	pitem->appendRow(item);
 	return item;
 }
 
 //填充合约树。
-void FillModelInst() {
-	extern QStandardItemModel* modelIns;
+void FillModelInst(QStandardItemModel *modelIns, QMap<QString, CThostFtdcInstrumentField> g_instMap) {
 	foreach(CThostFtdcInstrumentField pInstrument, g_instMap.values()) {
 		//根节点。
 		QStandardItem *parentItem = modelIns->invisibleRootItem();
@@ -38,5 +39,29 @@ void FillModelInst() {
 		//添加合约日期。
 		parentItem = addTreeItem(parentItem, pInstrument.InstrumentID);
 	}
-	
 }
+
+//一个线程安全的订单号递增函数。
+
+
+//一个线程安全的订单号递增函数。
+int g_OrderRef = 0;
+QMutex mutex1;
+QString NextOrderRef() {
+	mutex1.lock();
+	g_OrderRef++;
+	mutex1.unlock();
+	return QString::number(g_OrderRef);
+}
+
+//一个线程安全的订单号递增函数。
+int g_ArbOrderId = 0;
+QMutex mutex2;
+QString NextArbOrderId() {
+	mutex2.lock();
+	g_ArbOrderId++;
+	mutex2.unlock();
+	return QString::number(g_ArbOrderId);
+}
+
+

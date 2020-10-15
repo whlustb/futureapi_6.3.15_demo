@@ -3,6 +3,7 @@
 #include "HandlerVars.h"
 #include "HandlerTrade.h"
 #include "MainForm.h"
+#include "CtpArbFunc.h"
 
 extern MainWindow* w_main;
 
@@ -686,8 +687,27 @@ void HandlerTrade::ReqQryOrder()
 	int ab = m_pUserApi->ReqQryOrder(&a, nRequestID++);
 	LOG((ab == 0) ? "请求查询报单......发送成功\n" : "请求查询报单......发送失败，序号=[%d]\n", ab);
 
-	g_liveordMap.clear();
 }
+
+///请求查询报单响应
+void HandlerTrade::OnRspQryOrder(CThostFtdcOrderField *pOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	if (pOrder) {
+		vector_OrderSysID.push_back(pOrder->OrderSysID);
+		vector_ExchangeID.push_back(pOrder->ExchangeID);
+		vector_InstrumentID.push_back(pOrder->InstrumentID);
+
+		//保存到本地。仅对部分成交、或者未成交，但仍然在挂单中的订单，
+		if (pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing || pOrder->OrderStatus == THOST_FTDC_OST_NoTradeQueueing )
+		{
+			g_orderUnfilledMap[QString(pOrder->OrderSysID)] = *pOrder;
+		}
+	}
+	CTraderSpi::OnRspQryOrder(pOrder, pRspInfo, nRequestID, bIsLast);
+	action_number++;
+	LOG("\n查询序号：\"%d\"\n\n", action_number);
+}
+
 
 ///报单录入请求
 void HandlerTrade::ReqOrderInsert_Condition(int select_num)
@@ -891,6 +911,11 @@ void HandlerTrade::ReqQryInvestorPosition()
 //请求查询投资者持仓：响应
 void HandlerTrade::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
 	
+	//存储到到全局变量
+	if (pInvestorPosition && pInvestorPosition->Position > 0) {
+		g_posList.append(*pInvestorPosition);
+	}
+	/*
 	LOG("<OnRspQryInvestorPosition>\n");
 	if (pInvestorPosition && pInvestorPosition->Position>0) {
 		//存储到到全局变量
@@ -950,11 +975,13 @@ void HandlerTrade::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
 	LOG("\tnRequestID [%d]\n", nRequestID);
 	LOG("\tbIsLast [%d]\n", bIsLast);
 	LOG("</OnRspQryInvestorPosition>\n");
+	*/
 
 	if (bIsLast) {
 		SetEvent(g_qEvent);
 		//持仓获取完毕，通知更新持仓表格。
-		emit w_main->signal_RefreshModelPosTable();
+		emit w_main->signal_RefreshPosTable();
+		qDebug() << "ddd";
 	}
 };
 
@@ -1145,19 +1172,6 @@ void HandlerTrade::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CT
 	}
 }
 
-//请求查询投资者结算结果
-void HandlerTrade::ReqQrySettlementInfo()
-{
-	CThostFtdcQrySettlementInfoField a = { 0 };
-	strcpy_s(a.BrokerID, g_config.server.BrokerID);
-	strcpy_s(a.InvestorID, g_config.InvestorID);
-	string Traday;
-	LOG("请输入交易日期或者交易月份(例如:20180101,月份则201801):");
-	cin >> Traday;
-	strcpy_s(a.TradingDay, Traday.c_str());
-	int b = m_pUserApi->ReqQrySettlementInfo(&a, nRequestID++);
-	LOG((b == 0) ? "请求查询投资者结算结果......发送成功\n" : "请求查询投资者结算结果......发送失败，错误序号=[%d]\n", b);
-}
 
 //请求查询转帐流水
 void HandlerTrade::ReqQryTransferSerial()
@@ -1265,6 +1279,18 @@ void HandlerTrade::ReqQrySettlementInfoConfirm()
 	int b = m_pUserApi->ReqQrySettlementInfoConfirm(&a, nRequestID++);
 	LOG((b == 0) ? "请求查询结算信息确认......发送成功\n" : "请求查询结算信息确认......发送失败，错误序号=[%d]\n", b);
 }
+
+void HandlerTrade::OnRspQrySettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+	CTraderSpi::OnRspQrySettlementInfoConfirm(pSettlementInfoConfirm, pRspInfo, nRequestID, bIsLast);
+	if (!pSettlementInfoConfirm  && !pRspInfo) {//未确认结算单时，是显示为空的。
+		LOG("结算结果未确认、确认结算单！！");
+		ReqSettlementInfoConfirm();
+	}
+	if (bIsLast) {
+		SetEvent(g_hEvent);
+	}
+}
+
 
 //请求查询产品组
 void HandlerTrade::ReqQryProductGroup()
@@ -1479,10 +1505,11 @@ void HandlerTrade::OnErrRtnOrderAction(CThostFtdcOrderActionField *pOrderAction,
 	}
 }
 
-///报单录入请求响应
+///报单录入请求响应，这个是CTP柜台返回的，仅当订单有误时，才会提示这个，
 void HandlerTrade::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo,
 	int nRequestID, bool bIsLast)
 {
+
 	if (pInputOrder && strcmp(pInputOrder->InvestorID, g_config.InvestorID) != 0)
 	{
 		return;
@@ -1507,33 +1534,54 @@ void HandlerTrade::OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder, C
 	}
 }
 
-
-
 //自定义下单 ，
-int HandlerTrade::ReqOrderInsert_Whl(QString inst, QString direction, QString offset, double price, double vol) {
-	CThostFtdcInputOrderField ord = { 0 };
-	strcpy_s(ord.BrokerID, g_config.server.BrokerID); //brokenId.
-	strcpy_s(ord.InvestorID, g_config.InvestorID); //投资者ID，
-	strcpy_s(ord.UserID, g_config.UserID); //用户ID。
-	strcpy_s(ord.InstrumentID, inst.toStdString().c_str()); //合约ID.
+int HandlerTrade::ReqOrderInsert_Whl(QString inst, QString direction, QString offset, double price, double vol, QString OrderRef, QString ArbOrderId, int LegId) {
+	CThostFtdcInputOrderField ordInput = { 0 };
+	strcpy_s(ordInput.BrokerID, g_config.server.BrokerID); //brokenId.
+	strcpy_s(ordInput.InvestorID, g_config.InvestorID); //投资者ID，
+	strcpy_s(ordInput.UserID, g_config.UserID); //用户ID。
+	strcpy_s(ordInput.InstrumentID, inst.toStdString().c_str()); //合约ID.
+	strcpy_s(ordInput.OrderRef, OrderRef.toStdString().c_str());//自定义订单号。
 	//1.买 THOST_FTDC_D_Buy; 2.卖 THOST_FTDC_D_Sell
-	ord.Direction = direction == QStr("买入") ? THOST_FTDC_D_Buy : THOST_FTDC_D_Sell; //买卖方向，
+	ordInput.Direction = direction == QStr("买入") ? THOST_FTDC_D_Buy : THOST_FTDC_D_Sell; //买卖方向，
 	//1.开仓 THOST_FTDC_OF_Open 2.平仓THOST_FTDC_OF_Close 3.强平THOST_FTDC_OF_ForceClose 4.平今THOST_FTDC_OF_CloseToday 5.平昨THOST_FTDC_OF_CloseYesterday 6.强减THOST_FTDC_OF_ForceOff 7.本地强平THOST_FTDC_OF_LocalForceClose");
-	ord.CombOffsetFlag[0] = offset == QStr("开仓") ? THOST_FTDC_OF_Open : THOST_FTDC_OF_Close; //开平标志，
-	strcpy_s(ord.CombHedgeFlag, "1"); //投机。 
-	ord.OrderPriceType = THOST_FTDC_OPT_LimitPrice; //限价单。
-	ord.LimitPrice = price; //价格。
-	ord.VolumeTotalOriginal = 1; //手数。
-	ord.TimeCondition = THOST_FTDC_TC_GFD;///当日有效
-	ord.VolumeCondition = THOST_FTDC_VC_AV;///全部数量
-	ord.MinVolume = 1;
-	ord.ContingentCondition = THOST_FTDC_CC_Immediately; //立即触发。
-	ord.StopPrice = 0;
-	ord.ForceCloseReason = THOST_FTDC_FCC_NotForceClose;
-	ord.IsAutoSuspend = 0;
-	strcpy_s(ord.ExchangeID, g_chExchangeID);
+	ordInput.CombOffsetFlag[0] = offset == QStr("开仓") ? THOST_FTDC_OF_Open : THOST_FTDC_OF_Close; //开平标志，
+	strcpy_s(ordInput.CombHedgeFlag, "1"); //投机。 
+	ordInput.OrderPriceType = THOST_FTDC_OPT_LimitPrice; //限价单。
+	ordInput.LimitPrice = price; //价格。
+	ordInput.VolumeTotalOriginal = 1; //手数。
+	ordInput.TimeCondition = THOST_FTDC_TC_GFD;///当日有效
+	ordInput.VolumeCondition = THOST_FTDC_VC_AV;///全部数量
+	ordInput.MinVolume = 1;
+	ordInput.ContingentCondition = THOST_FTDC_CC_Immediately; //立即触发。
+	ordInput.StopPrice = 0;
+	ordInput.ForceCloseReason = THOST_FTDC_FCC_NotForceClose;
+	ordInput.IsAutoSuspend = 0;
+	strcpy_s(ordInput.ExchangeID, g_chExchangeID);
 	//0，代表成功。 -1，表示网络连接失败；- 2，表示未处理请求超过许可数； - 3，表示每秒发送请求数超过许可数。
-	int a = api->ReqOrderInsert(&ord, 1);
+	int a = api->ReqOrderInsert(&ordInput, 1);
+
+	//保存普通订单信息，
+	Order ord = { 0 }; 
+	ord.UserID = QString(g_config.UserID);
+	ord.OrderRef = OrderRef;
+	ord.InstrumentID = inst;
+	ord.Price = price;
+	ord.VolumeTotalOriginal = vol;
+	ord.VolumeTotal = vol;
+	ord.Direction = direction;
+	ord.Offset = offset;
+	ord.OrderSource = "ctpArb";
+	ord.ArbOrderId = ArbOrderId;
+	ord.LegId = LegId;
+	ord.OrderStatus = QChar::fromLatin1('a'); //代表未知。
+	QDateTime tm = QDateTime::currentDateTime();//获取系统现在的时间
+	ord.InsertDate = tm.toString("yyyy.MM.dd");
+	ord.InsertTime = tm.toString("hh:mm:ss");
+	//保存报单信息。
+	g_orderMap.insert(OrderRef, ord);
+	emit w_main->signal_RefreshOrdTable(ord.OrderRef, "add");
+	
 	return a;
 }
 
@@ -1585,6 +1633,21 @@ void HandlerTrade::OnRtnOrder(CThostFtdcOrderField *pOrder)
 			LOG("已触发\n\n");
 		}
 
+		//更新报单状态和剩余数量
+		if (g_orderMap.contains(pOrder->OrderRef)) {
+			Order* ord = &g_orderMap[QString(pOrder->OrderRef)];
+			ord->VolumeTotal = pOrder->VolumeTotal;
+			ord->OrderStatus = pOrder->OrderStatus;
+
+			//更新套利单状态和剩余数量
+			if (g_arbOrderMap.contains(ord->ArbOrderId)) {
+				g_arbOrderMap[ord->ArbOrderId].OrdLegList[ord->LegId].DealVol = pOrder->VolumeTotal;
+				g_arbOrderMap[ord->ArbOrderId].OrdLegList[ord->LegId].Status = pOrder->OrderStatus;
+			}
+			//发送信号。
+			emit w_main->signal_RefreshOrdTable(ord->OrderRef, "update");
+		}
+
 		//订单一旦有成交，就要查询持仓，
 		if (pOrder->OrderStatus == THOST_FTDC_OST_AllTraded || pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing || pOrder->OrderStatus == THOST_FTDC_OST_NoTradeQueueing)///全部成交 ///部分成交
 		{
@@ -1601,8 +1664,22 @@ void HandlerTrade::OnRtnTrade(CThostFtdcTradeField *pTrade) {
 		return;
 	} else {
 		CTraderSpi::OnRtnTrade(pTrade);
-		//通知更新成交均价。
-		emit w_main->signal_UpdateOrdDealPrice(QString(pTrade->OrderSysID), pTrade->Price, pTrade->Volume);
+		//更新报单成交均价
+		if (g_orderMap.contains(pTrade->OrderRef)) {
+			Order* ord = &g_orderMap[QString(pTrade->OrderRef)];
+			int vol_deal = ord->VolumeTotalOriginal - ord->VolumeTotal;
+			ord->AvgPrice = (ord->AvgPrice * vol_deal + pTrade->Price * pTrade->Volume) / (vol_deal + pTrade->Volume);
+
+			//更新套利腿成交均价。
+			if (g_arbOrderMap.contains(ord->ArbOrderId)) {
+				g_arbOrderMap[ord->ArbOrderId].OrdLegList[ord->LegId].AvgPrice = ord->AvgPrice;
+			}
+			//发送信号。
+			emit w_main->signal_RefreshOrdTable(ord->OrderRef, "update");
+		}
+
+
+		
 	}
 }
 
@@ -1682,31 +1759,6 @@ void HandlerTrade::OnRspQryParkedOrder(CThostFtdcParkedOrderField *pParkedOrder,
 	CTraderSpi::OnRspQryParkedOrder(pParkedOrder, pRspInfo, nRequestID, bIsLast);
 }
 
-///请求查询报单响应
-void HandlerTrade::OnRspQryOrder(CThostFtdcOrderField *pOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	if (pOrder) {
-		vector_OrderSysID.push_back(pOrder->OrderSysID);
-		vector_ExchangeID.push_back(pOrder->ExchangeID);
-		vector_InstrumentID.push_back(pOrder->InstrumentID);
-
-		//保存到本地。仅对部分成交、或者未成交，但仍然在挂单中的订单，
-		if (pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing || pOrder->OrderStatus == THOST_FTDC_OST_NoTradeQueueing )
-		{
-			g_liveordMap[QString(pOrder->OrderSysID)] = *pOrder;
-		}
-	}
-	CTraderSpi::OnRspQryOrder(pOrder, pRspInfo, nRequestID, bIsLast);
-	action_number++;
-
-	if (bIsLast) {
-		SetEvent(g_qEvent);
-		//持仓获取完毕，通知更新前台。
-		emit w_main->signal_RefreshModelLiveOrdTable();
-	}
-
-	LOG("\n查询序号：\"%d\"\n\n", action_number);
-}
 
 ///执行宣告通知
 void HandlerTrade::OnRtnExecOrder(CThostFtdcExecOrderField *pExecOrder)

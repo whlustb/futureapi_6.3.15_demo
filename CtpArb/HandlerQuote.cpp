@@ -55,30 +55,20 @@ void HandlerQuote::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
 void HandlerQuote::SubscribeMarketData()//收行情
 {
 	int md_num = 0;
-	char **ppInstrumentID = new char*[5000];
-	for (int count1 = 0; count1 <= md_InstrumentID.size() / 500; count1++)
-	{
-		if (count1 < md_InstrumentID.size() / 500)
-		{
-			int a = 0;
-			for (a; a < 500; a++)
-			{
-				ppInstrumentID[a] = const_cast<char *>(md_InstrumentID.at(md_num).c_str());
-				md_num++;
-			}
-			int result = m_pUserMdApi->SubscribeMarketData(ppInstrumentID, a);
-			LOG((result == 0) ? "订阅行情请求1......发送成功\n" : "订阅行情请求1......发送失败，错误序号=[%d]\n", result);
+	char **ppInstrumentID =nullptr;
+	int j = 0;
+	
+	for (int i = 0; i < md_InstrumentID.size(); i++) {
+		if (i % 500 == 0) {
+			if (ppInstrumentID != nullptr) delete[]ppInstrumentID;
+			ppInstrumentID = new char*[500];
+			j = 0;
 		}
-		else if (count1 == md_InstrumentID.size() / 500)
-		{
-			int count2 = 0;
-			for (count2; count2 < md_InstrumentID.size() % 500; count2++)
-			{
-				ppInstrumentID[count2] = const_cast<char *>(md_InstrumentID.at(md_num).c_str());
-				md_num++;
-			}
-			int result = m_pUserMdApi->SubscribeMarketData(ppInstrumentID, count2);
-			LOG((result == 0) ? "订阅行情请求2......发送成功\n" : "订阅行情请求2......发送失败，错误序号=[%d]\n", result);
+		ppInstrumentID[j++] = const_cast<char *>(md_InstrumentID.at(i).c_str());
+		//500个，或者是到了最后一个。
+		if (i>0 && i%500==0 || i == md_InstrumentID.size() - 1) {
+			int result = m_pUserMdApi->SubscribeMarketData(ppInstrumentID, j);
+			LOG((result == 0) ? "订阅行情请求1......发送成功\n" : "订阅行情请求1......发送失败，错误序号=[%d]\n", result);
 		}
 	}
 }
@@ -114,6 +104,8 @@ void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMa
 	//LOG("<OnRtnDepthMarketData>\n");
 	if (pDepthMarketData)
 	{
+		LOG("\tInstrumentID = [%s] [%.8lf]\n", pDepthMarketData->InstrumentID, pDepthMarketData->LastPrice);
+
 		/*
 		LOG("\tInstrumentID = [%s]\n", pDepthMarketData->InstrumentID);
 		LOG("\tExchangeID = [%s]\n", pDepthMarketData->ExchangeID);

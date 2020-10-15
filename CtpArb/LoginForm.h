@@ -1,8 +1,6 @@
 #pragma once
-
 #include <QWidget>
 #include "ui_LoginForm.h"
-
 #include "HandlerVars.h"
 #include "HandlerQuote.h"
 #include "HandlerTrade.h"

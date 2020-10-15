@@ -25,9 +25,8 @@ public:
 signals:
 	void signal_UpdatePositionProfit(QString instrument_id, double last_price); //更新持仓盈亏(价格有更新时)
 	void signal_UpdateArbPrice(QString instrument_id, double last_price); //更新套利组件价差(价格有更新时)
-	void signal_RefreshModelPosTable();//填充持仓到模型变量，
-	void signal_RefreshModelLiveOrdTable();//填充未成交订单到模型变量，
-	void signal_UpdateOrdDealPrice(QString oid, double price, int vol);//订单成交均价更新。
+	void signal_RefreshPosTable();//填充持仓到模型变量，
+	void signal_RefreshOrdTable(QString orderRef, QString type);//提交到线上的订单。
 
 //槽函数定义。	
 public slots:
@@ -39,18 +38,17 @@ public slots:
 	void ShowContextMenu(QPoint pos); //套利组件列表上显示的右键点击事件。
 	void DeleteArbPortf(); //删除套利组合。
 	void DeleteArbOrder(); //删除套利订单。
-	void RefreshModelPosTable();
-	void RefreshModelLiveOrdTable();
+	void RefreshPosTable();
+	void RefreshOrdTable(QString orderRef, QString type);
 	//填充持仓到模型变量，
-	void AddToModelArbTable(ArbPortf arb); //添加套利组合到模型中。
+	void AddToArbPortfTable(ArbPortf arb); //添加套利组合到模型中。
 	void SubmitArbOrder(); //提交套利单。
-
 	void UpdatePositionProfit(QString instrument_id, double last_price); //更新持仓盈亏(价格有更新时)
 	void UpdateArbPrice(QString instrument_id, double last_price); //更新套利组件价差(价格有更新时)
-
-	void UpdateOrdDealPrice(QString oid, double price, int vol);//订单成交均价更新。
-
 	void UpdateInstrument();//更新合约。
+	void AddToArbOrderTable(ArbOrder ord); ////将订单数据填充到模型。
+	ArbPortf FillArbPortf(); //将表单中的数据，填入套利组合对象，
+	ArbOrder FillArbOrder(); //将表单中的数据，填入套利组合对象，
 
 protected:
 	bool eventFilter(QObject *obj, QEvent *e); //事件过滤器，
@@ -58,8 +56,5 @@ protected:
 private:
     Ui::CtpArbClass ui;
 
-	ArbPortf FillArbPortf(); //将表单中的数据，填入套利组合对象，
-	ArbOrder FillArbOrder(); //将表单中的数据，填入套利组合对象，
-	void AddToModelOrderTable(ArbOrder ord); ////将订单数据填充到模型。
-	int getNewOrdId(); //获取新的可用订单号。
+	
 };  

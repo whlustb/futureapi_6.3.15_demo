@@ -69,3 +69,26 @@ QList<CThostFtdcInvestorPositionField> g_posList; //持仓信息。
 QMap<QString, CThostFtdcDepthMarketDataField> g_depthMap; //最新的合约深度行情。
 
 OrderWorker* g_orderWorker = new OrderWorker(); //定义全局订单处理类。
+
+/******全局变量******/
+QStandardItemModel *modelIns = new QStandardItemModel(); //合约列表模型。
+QStandardItemModel *modelPosition = new QStandardItemModel(); ; //持仓模型
+QStandardItemModel *modelArbPortf = new QStandardItemModel(); ; //套利组合模型
+QStandardItemModel *modelArbOrder = new QStandardItemModel(); ; //本地套利单模型
+QStandardItemModel *modelOrder = new QStandardItemModel(); ; //普通订单模型。
+QList<ArbPortf> g_arbPortfList; //套利组合列表。
+QMap<QString, ArbOrder> g_arbOrderMap; //套利订单列表。key:本地套利订单ID.
+QMap<QString, Order> g_orderMap; //本系统的下单列表。 key:OrderRef值，
+QMap<QString, CThostFtdcOrderField> g_orderUnfilledMap; //线上未成交订单。
+
+
+QMap<char, QString> PosDirectionMap{ {'1', "NA"},  {'2', QStr("买")},  {'3', QStr("卖")} };
+QMap<char, QString> OrdDirectionMap{ {'0', QStr("买")},  {'1', QStr("卖")} };
+QMap<char, QString> OrdOffsetMap{ {'0', QStr("开仓")},  {'1', QStr("平仓")},  {'1', QStr("强平")},  {'1', QStr("平今")},  {'1', QStr("平昨")},  {'1', QStr("强减")} ,  {'1', QStr("本地强平")} };
+QMap<char, QString> OrdStatusMap{ {'0', QStr("全部成交")},  {'1', QStr("部分成交(队中)")},  {'2', QStr("部分成交(队外)")},  {'3', QStr("排队中")},  {'4', QStr("不在队列中")},  {'5', QStr("撤单")} ,  {'a', QStr("未知")}  ,  {'b', QStr("未触发")},  {'b', QStr("已触发")}  };
+
+
+
+//配置对象。
+ConfigInfo g_config;
+QList<FrontServer> g_serverList;

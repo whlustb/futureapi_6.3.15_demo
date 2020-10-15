@@ -5,6 +5,28 @@
 #include <QDataStream>
 #include <QTime>
 
+
+//前置服务器
+struct FrontServer {
+	QString Name;
+	char* Addr;
+	char* MdAddr;
+	char* BrokerID;
+};
+//配置文件结构体。 为了方便使用，全部用了这种char*的，除了name外。
+struct ConfigInfo {
+	char* UserProductInfo;
+	char* AuthCode;
+	char* AppID;
+
+	char* UserID;
+	char* Password;
+	char* InvestorID;
+	FrontServer server;
+
+};
+
+
 //套利组合单腿，
 struct ArbLeg {
 	QString InstrumentID; //合约ID
@@ -72,80 +94,108 @@ struct ArbPortf
 
 //订单单腿，继承的组合的单腿。
 struct OrdLeg:public ArbLeg {
-	int OrderId; //发到交易所的订单号。
+	QString OrderRef; //下单时，自己填的，
 	int DealVol; //成交数量。
-	QString Status; //订单状态。
+	double AvgPrice; //成交均价。
+	QChar Status; //订单状态。
 
 	//序列化
 	friend QDataStream &operator<<(QDataStream& input, const OrdLeg& dt) {
 		input << dt.InstrumentID << dt.Direction << dt.Vol << dt.PriceType << dt.SlipPoint << dt.Chase << dt.ChasePoint;
-		input << dt.OrderId << dt.DealVol << dt.Status;
+		input << dt.OrderRef << dt.DealVol << dt.AvgPrice << dt.Status;
 		return input;
 	}
 
 	//反序列化
 	friend QDataStream &operator>>(QDataStream& output, OrdLeg& dt) {
 		output >> dt.InstrumentID >> dt.Direction >> dt.Vol >> dt.PriceType >> dt.SlipPoint >> dt.Chase >> dt.ChasePoint;
-		output >> dt.OrderId >> dt.DealVol >> dt.Status;
+		output >> dt.OrderRef >> dt.DealVol >> dt.AvgPrice >> dt.Status;
 		return output;
 	}
 };
 
 //套利单、继承套利基本配置
 struct ArbOrder{
-	QString Name; //名称。
+	QString Id; //订单编号。
 	QString Offset; //开、平、自动开平
 	QString SendOrderType; //下单方式：全部同时、主动腿。
-
+	
 	QString CondFormula; //下单条件：公式
 	QString CondOperator; //下单条件。比较符号
 	QString CondVal; //下单条件。比较值
 
 	int Times; //份数，
 	bool Loop; //循环套利。
-
-	int Id; //订单编号。
 	QTime Time; //下单时间
+	
 	QList<OrdLeg> OrdLegList; //套利单腿列表。
 
 	//序列化
 	friend QDataStream &operator<<(QDataStream& input, const ArbOrder& dt) {
-		input << dt.Name << dt.Offset << dt.SendOrderType \
+		input << dt.Id << dt.Offset << dt.SendOrderType \
 			<< dt.CondFormula << dt.CondOperator << dt.CondVal \
-			<< dt.Times << dt.Loop;
-		input << dt.Id << dt.Time << dt.OrdLegList;
+			<< dt.Times << dt.Loop << dt.Time << dt.OrdLegList ;
 		return input;
 	}
 
 	//反序列化
 	friend QDataStream &operator>>(QDataStream& output, ArbOrder& dt) {
-		output >> dt.Name >> dt.Offset >> dt.SendOrderType \
+		output >> dt.Id >> dt.Offset >> dt.SendOrderType \
 			>> dt.CondFormula >> dt.CondOperator >> dt.CondVal \
-			>> dt.Times >> dt.Loop;
-		output >> dt.Id >> dt.Time >> dt.OrdLegList;
+			>> dt.Times >> dt.Loop >> dt.Time >> dt.OrdLegList ;
 		return output;
 	}
 };
 
+//普通订单、一旦提交订单、就立即保存、收到回报时，更新本地订单。
+struct Order {
+	
+	///用户ID.
+	QString	UserID;
+	///报单引用
+	QString	OrderRef;
+	///合约代码
+	QString	InstrumentID;
+	///价格
+	double Price;
+	//成交均价。
+	double AvgPrice;
+	///报单数量
+	int	VolumeTotalOriginal;
+	///剩余数量
+	int	VolumeTotal;
+	///买卖方向
+	QString	Direction;
+	///开平标志
+	QString	Offset;
+	///报单来源
+	QString	OrderSource;
+	///报单状态
+	QChar	OrderStatus;
+	///报单日期
+	QString	InsertDate;
+	///委托时间
+	QString	InsertTime;
 
-//前置服务器
-struct FrontServer {
-	QString Name;
-	char* Addr;
-	char* MdAddr;
-	char* BrokerID;
+	//记录它所属的套利单信息。
+	QString ArbOrderId;
+	int LegId;
+
+	//序列化
+	friend QDataStream &operator<<(QDataStream& input, const Order& dt) {
+		input << dt.UserID << dt.OrderRef << dt.InstrumentID << dt.Price << dt.AvgPrice << dt.VolumeTotalOriginal << dt.VolumeTotal;
+		input << dt.Direction << dt.Offset << dt.OrderSource << dt.OrderStatus << dt.InsertDate << dt.InsertTime ;
+		input << dt.ArbOrderId << dt.LegId;
+		return input;
+	}
+
+	//反序列化
+	friend QDataStream &operator>>(QDataStream& output, Order& dt) {
+		output >> dt.UserID >> dt.OrderRef >> dt.InstrumentID >> dt.Price >> dt.AvgPrice >> dt.VolumeTotalOriginal >> dt.VolumeTotal;
+		output >> dt.Direction >> dt.Offset >> dt.OrderSource >> dt.OrderStatus >> dt.InsertDate >> dt.InsertTime;
+		output >> dt.ArbOrderId >> dt.LegId;
+		return output;
+	}
+
+
 };
-
-//配置文件结构体。 为了方便使用，全部用了这种char*的，除了name外。
-struct ConfigInfo {
-	char* UserProductInfo;
-	char* AuthCode;
-	char* AppID;
-
-	char* UserID;
-	char* Password;
-	char* InvestorID;
-	FrontServer server;
-
-};
-

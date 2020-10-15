@@ -88,7 +88,7 @@ public:
 	void ReqRemoveParkedOrderAction();
 
 	///报单录入请求
-	int ReqOrderInsert_Whl(QString inst, QString direction, QString offset, double price, double vol);
+	int ReqOrderInsert_Whl(QString inst, QString direction, QString offset, double price, double vol, QString OrderRef, QString ArbOrderId, int LegId);
 
 	///报单录入请求
 	void ReqOrderInsert_Ordinary();
@@ -208,6 +208,8 @@ public:
 
 	//请求查询结算信息确认
 	void ReqQrySettlementInfoConfirm();
+	void OnRspQrySettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+
 
 	//请求查询产品组
 	void ReqQryProductGroup();
