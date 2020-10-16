@@ -51,7 +51,7 @@ QString NextOrderRef() {
 	mutex1.lock();
 	g_OrderRef++;
 	mutex1.unlock();
-	return QString::number(g_OrderRef);
+	return Num(g_OrderRef);
 }
 
 //一个线程安全的订单号递增函数。
@@ -61,7 +61,23 @@ QString NextArbOrderId() {
 	mutex2.lock();
 	g_ArbOrderId++;
 	mutex2.unlock();
-	return QString::number(g_ArbOrderId);
+	return Num(g_ArbOrderId);
 }
 
 
+//计算套利组合的价格。
+double CalOrdLegPrice(OrdLeg* item) {
+	if (!g_depthMap.contains(item->InstrumentID)) return 0;
+	if (item->PriceType == QStr("市价")) return -1;
+
+	CThostFtdcDepthMarketDataField depth = g_depthMap[item->InstrumentID];
+	double price = depth.LastPrice;
+	if (item->PriceType == QStr("对盘价")) {
+		price = item->Direction == QStr("买入") ? depth.AskPrice1 : depth.BidPrice1;
+	} else if (item->PriceType == QStr("排队价")) {
+		price = item->Direction == QStr("买入") ? depth.BidPrice1 : depth.AskPrice1;
+	}
+	//滑点。
+	price += item->Direction == QStr("买入") ? item->SlipPoint : -item->SlipPoint;
+	return price;
+}

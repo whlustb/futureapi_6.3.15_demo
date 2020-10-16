@@ -52,92 +52,21 @@ void HandlerQuote::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
 	//SubscribeForQuoteRsp();//询价请求
 }
 
-void HandlerQuote::SubscribeMarketData()//收行情
-{
-	int md_num = 0;
-	char **ppInstrumentID =nullptr;
-	int j = 0;
-	
-	for (int i = 0; i < md_InstrumentID.size(); i++) {
-		if (i % 500 == 0) {
-			if (ppInstrumentID != nullptr) delete[]ppInstrumentID;
-			ppInstrumentID = new char*[500];
-			j = 0;
-		}
-		ppInstrumentID[j++] = const_cast<char *>(md_InstrumentID.at(i).c_str());
-		//500个，或者是到了最后一个。
-		if (i>0 && i%500==0 || i == md_InstrumentID.size() - 1) {
-			int result = m_pUserMdApi->SubscribeMarketData(ppInstrumentID, j);
-			LOG((result == 0) ? "订阅行情请求1......发送成功\n" : "订阅行情请求1......发送失败，错误序号=[%d]\n", result);
-		}
+///询价通知
+void HandlerQuote::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp) {
+	LOG("<OnRtnForQuoteRsp>\n");
+	if (pForQuoteRsp) {
+		LOG("\tTradingDay = [%s]\n", pForQuoteRsp->TradingDay);
+		LOG("\tInstrumentID = [%s]\n", pForQuoteRsp->InstrumentID);
+		LOG("\tForQuoteSysID = [%s]\n", pForQuoteRsp->ForQuoteSysID);
+		LOG("\tForQuoteTime = [%s]\n", pForQuoteRsp->ForQuoteTime);
+		LOG("\tActionDay = [%s]\n", pForQuoteRsp->ActionDay);
+		LOG("\tExchangeID = [%s]\n", pForQuoteRsp->ExchangeID);
 	}
+	LOG("</OnRtnForQuoteRsp>\n");
+	SetEvent(g_qEvent);
 }
 
-///订阅行情应答
-void HandlerQuote::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-	LOG("<OnRspSubMarketData>\n");
-	if (pSpecificInstrument)
-	{
-		LOG("\tInstrumentID = [%s]\n", pSpecificInstrument->InstrumentID);
-	}
-	if (pRspInfo)
-	{
-		LOG("\tErrorMsg = [%s]\n", pRspInfo->ErrorMsg);
-		LOG("\tErrorID = [%d]\n", pRspInfo->ErrorID);
-	}
-	LOG("\tnRequestID = [%d]\n", nRequestID);
-	LOG("\tbIsLast = [%d]\n", bIsLast);
-	LOG("</OnRspSubMarketData>\n");
-}
-
-
-///深度行情通知
-void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
-{
-	//QThread::msleep(10 * 1000);
-
-	//QDateTime dateTime = QDateTime::currentDateTime();
-	//LOG(dateTime.toString("yyyy/mm/dd, hh:mm:ss.zzz").toStdString().c_str());
-	//if (true) return;
-
-	//LOG("<OnRtnDepthMarketData>\n");
-	if (pDepthMarketData)
-	{
-		LOG("\tInstrumentID = [%s] [%.8lf]\n", pDepthMarketData->InstrumentID, pDepthMarketData->LastPrice);
-
-		/*
-		LOG("\tInstrumentID = [%s]\n", pDepthMarketData->InstrumentID);
-		LOG("\tExchangeID = [%s]\n", pDepthMarketData->ExchangeID);
-		LOG("\tLastPrice = [%.8lf]\n", pDepthMarketData->LastPrice);
-		LOG("\tPreSettlementPrice = [%.8lf]\n", pDepthMarketData->PreSettlementPrice);
-		LOG("\tOpenPrice = [%.8lf]\n", pDepthMarketData->OpenPrice);
-		LOG("\tVolume = [%d]\n", pDepthMarketData->Volume);
-		LOG("\tTurnover = [%.8lf]\n", pDepthMarketData->Turnover);
-		LOG("\tOpenInterest = [%d]\n", pDepthMarketData->OpenInterest);
-		*/
-
-		QString inst_id = QString(pDepthMarketData->InstrumentID);
-		CThostFtdcDepthMarketDataField old = g_depthMap[inst_id];
-		g_depthMap[inst_id] = *pDepthMarketData;
-		if (old.LastPrice != pDepthMarketData->LastPrice) { //最新价有变化时，更新界面。
-			//通知更新持仓盈亏。
-			emit w_main->signal_UpdatePositionProfit(inst_id, pDepthMarketData->LastPrice);
-
-			//通知更新套利组件。
-			emit w_main->signal_UpdateArbPrice(inst_id, pDepthMarketData->LastPrice);
-			
-			//通知更新
-			emit g_orderWorker->signal_DealArbOrder(inst_id, pDepthMarketData->LastPrice);
-		}
-		
-		
-
-		//emit w_main->signal_Test(QString(inst_id), pDepthMarketData->LastPrice);
-	}
-	//LOG("</OnRtnDepthMarketData>\n");
-
-}
 
 ///订阅询价请求
 void HandlerQuote::SubscribeForQuoteRsp()
@@ -169,19 +98,85 @@ void HandlerQuote::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpeci
 }
 
 
-///询价通知
-void HandlerQuote::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
+
+/*********自己修改较多的*********/
+//订阅合约行情，
+void HandlerQuote::SubscribeMarketData()
 {
-	LOG("<OnRtnForQuoteRsp>\n");
-	if (pForQuoteRsp)
-	{
-		LOG("\tTradingDay = [%s]\n", pForQuoteRsp->TradingDay);
-		LOG("\tInstrumentID = [%s]\n", pForQuoteRsp->InstrumentID);
-		LOG("\tForQuoteSysID = [%s]\n", pForQuoteRsp->ForQuoteSysID);
-		LOG("\tForQuoteTime = [%s]\n", pForQuoteRsp->ForQuoteTime);
-		LOG("\tActionDay = [%s]\n", pForQuoteRsp->ActionDay);
-		LOG("\tExchangeID = [%s]\n", pForQuoteRsp->ExchangeID);
+	int md_num = 0;
+	char **ppInstrumentID = nullptr;
+	int j = 0;
+
+	for (int i = 0; i < md_InstrumentID.size(); i++) {
+		if (i % 500 == 0) {
+			if (ppInstrumentID != nullptr) delete[]ppInstrumentID;
+			ppInstrumentID = new char*[500];
+			j = 0;
+		}
+		ppInstrumentID[j++] = const_cast<char *>(md_InstrumentID.at(i).c_str());
+		//500个，或者是到了最后一个。
+		if (i > 0 && i % 500 == 0 || i == md_InstrumentID.size() - 1) {
+			int result = m_pUserMdApi->SubscribeMarketData(ppInstrumentID, j);
+			LOG((result == 0) ? "订阅行情请求1......发送成功\n" : "订阅行情请求1......发送失败，错误序号=[%d]\n", result);
+		}
 	}
-	LOG("</OnRtnForQuoteRsp>\n");
-	SetEvent(g_qEvent);
+}
+
+///订阅行情应答
+void HandlerQuote::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+	LOG("<OnRspSubMarketData>\n");
+	if (pSpecificInstrument) {
+		LOG("\tInstrumentID = [%s]\n", pSpecificInstrument->InstrumentID);
+	}
+	if (pRspInfo) {
+		LOG("\tErrorMsg = [%s]\n", pRspInfo->ErrorMsg);
+		LOG("\tErrorID = [%d]\n", pRspInfo->ErrorID);
+	}
+	LOG("\tnRequestID = [%d]\n", nRequestID);
+	LOG("\tbIsLast = [%d]\n", bIsLast);
+	LOG("</OnRspSubMarketData>\n");
+}
+
+
+///深度行情通知
+void HandlerQuote::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) {
+	//QThread::msleep(10 * 1000);
+
+	//QDateTime dateTime = QDateTime::currentDateTime();
+	//LOG(dateTime.toString("yyyy/mm/dd, hh:mm:ss.zzz").toStdString().c_str());
+	//if (true) return;
+
+	//LOG("<OnRtnDepthMarketData>\n");
+	if (pDepthMarketData) {
+		LOG("\tInstrumentID = [%s] [%.8lf]\n", pDepthMarketData->InstrumentID, pDepthMarketData->LastPrice);
+
+		/*
+		LOG("\tInstrumentID = [%s]\n", pDepthMarketData->InstrumentID);
+		LOG("\tExchangeID = [%s]\n", pDepthMarketData->ExchangeID);
+		LOG("\tLastPrice = [%.8lf]\n", pDepthMarketData->LastPrice);
+		LOG("\tPreSettlementPrice = [%.8lf]\n", pDepthMarketData->PreSettlementPrice);
+		LOG("\tOpenPrice = [%.8lf]\n", pDepthMarketData->OpenPrice);
+		LOG("\tVolume = [%d]\n", pDepthMarketData->Volume);
+		LOG("\tTurnover = [%.8lf]\n", pDepthMarketData->Turnover);
+		LOG("\tOpenInterest = [%d]\n", pDepthMarketData->OpenInterest);
+		*/
+
+		QString inst_id = QString(pDepthMarketData->InstrumentID);
+		CThostFtdcDepthMarketDataField old = g_depthMap[inst_id];
+		g_depthMap[inst_id] = *pDepthMarketData;
+		if (old.LastPrice != pDepthMarketData->LastPrice) { //最新价有变化时，更新界面。
+			//通知更新持仓盈亏。
+			emit w_main->signal_UpdatePositionProfit(inst_id, pDepthMarketData->LastPrice);
+
+			//通知更新套利组件。
+			emit w_main->signal_UpdateArbPrice(inst_id, pDepthMarketData->LastPrice);
+
+			//通知更新
+			emit g_orderWorker->signal_DealArbOrder(inst_id);
+		}
+
+		//emit w_main->signal_Test(QString(inst_id), pDepthMarketData->LastPrice);
+	}
+	//LOG("</OnRtnDepthMarketData>\n");
+
 }

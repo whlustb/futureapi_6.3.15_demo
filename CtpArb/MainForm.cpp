@@ -99,13 +99,6 @@ void MainWindow::Init() {
 	//套利组合价差更新
 	QObject::connect(this, SIGNAL(signal_UpdateArbPrice(QString, double)), this, SLOT(UpdateArbPrice(QString, double)));
 
-	//订单处理套利订单
-	QObject::connect(g_orderWorker, SIGNAL(signal_DealArbOrder(QString, double)), g_orderWorker, SLOT(DealArbOrder(QString, double)));
-	//将订单处理槽函数移入新的线程去执行，
-	QThread* m_pThread = new QThread;
-	m_pThread->start();
-	g_orderWorker->moveToThread(m_pThread);
-
 	//反序列化，恢复数据，
 	QFile file("data.dat");
 	if (file.open(QIODevice::ReadOnly)) {
@@ -153,7 +146,7 @@ void MainWindow::Init() {
 	ui.tableView_arbordlist->setModel(modelArbOrder);
 	//设置表头
 	QStringList ordHeader;
-	ordHeader << QStr("订单编号") << QStr("条件") << QStr("状态") << QStr("操作");
+	ordHeader << QStr("订单编号") << QStr("条件") << QStr("成交/数量") << QStr("状态") << QStr("操作");
 	modelArbOrder->setHorizontalHeaderLabels(ordHeader);
 	modelArbOrder->setColumnCount(ordHeader.size());//设置列数
 	ui.tableView_arbordlist->verticalHeader()->hide();//隐藏行号。
@@ -285,6 +278,7 @@ void MainWindow::ChooseInstrument(QModelIndex idx) {
 	}
 }
 
+
 //将表单中的数据，填入套利组合对象，
 ArbPortf MainWindow::FillArbPortf() {
 	ArbPortf item;
@@ -322,6 +316,19 @@ ArbPortf MainWindow::FillArbPortf() {
 
 	item.Times = ui.spinBox_times->value();
 	item.Loop = ui.checkBox_loop->isChecked();
+
+	
+	vector<string>::iterator fnd1 = std::find(md_InstrumentID.begin(), md_InstrumentID.end(), leg1.InstrumentID.toStdString());
+	if (fnd1 == md_InstrumentID.end()) {
+		md_InstrumentID.push_back(leg1.InstrumentID.toStdString());
+		md_spi->SubscribeMarketData();
+	}
+	vector<string>::iterator fnd2 = std::find(md_InstrumentID.begin(), md_InstrumentID.end(), leg2.InstrumentID.toStdString());
+	if (fnd2 == md_InstrumentID.end()) {
+		md_InstrumentID.push_back(leg2.InstrumentID.toStdString());
+		md_spi->SubscribeMarketData();
+	}
+
 	return item;
 }
 
@@ -428,19 +435,40 @@ void MainWindow::DeleteArbPortf() {
 void MainWindow::DeleteArbOrder() {
 	QModelIndex idx = ui.tableView_arbordlist->currentIndex();
 
-	//删除订单列表。
-	QString oid = modelArbOrder->data(modelArbOrder->index(idx.row(), 0)).toString();
-	
+	//获取套利单号
+	QString arbOrderId = modelArbOrder->data(modelArbOrder->index(idx.row(), 0)).toString();
+
+	//删除本地套利单
 	foreach(QString id, g_arbOrderMap.keys()) {
-		if (id == oid) {
+		if (id == arbOrderId) {
 			g_arbOrderMap.remove(id);
 			break;
 		}
 	}
+	//删除本地套利单模型。
+	for (int i = modelArbOrder->rowCount()-1; i--; i >= 0) {
+		if (arbOrderId == modelArbOrder->data(modelArbOrder->index(i, 0)).toString()) {
+			modelArbOrder->removeRows(i, 3);
+			break;
+		}
+	}
 
-	//注意这段放下面，否则会出错，因为上面代码用到了modelOrd
-	//删除表单模型中对应的3行。
-	modelArbOrder->removeRows(idx.row(), 3);
+	//删除普通单
+	QList<QString> deletedList;
+	foreach(QString orderRef, g_orderMap.keys()) {
+		if (g_orderMap[orderRef].ArbOrderId == arbOrderId) {
+			g_orderMap.remove(orderRef);
+			deletedList.append(orderRef);
+		}
+	}
+	//删除普通单模型。
+	for (int i = modelOrder->rowCount() - 1; i--; i >= 0) {
+		QString orderRef = modelOrder->data(modelOrder->index(i, 0)).toString();
+		if(deletedList.contains(orderRef)){
+			modelOrder->removeRow(i);
+		}
+	}
+
 }
 
 //将持仓同步到模型中
@@ -456,12 +484,12 @@ void MainWindow::RefreshPosTable() {
 		double profit = (last_price - cost)* item.Position*g_instMap[item.InstrumentID].VolumeMultiple;
 		modelPosition->setItem(row, 0, new QStandardItem(QString(item.InstrumentID)));//合约
 		modelPosition->setItem(row, 1, new QStandardItem(PosDirectionMap[item.PosiDirection])); //多空方向
-		modelPosition->setItem(row, 2, new QStandardItem(QString::number(item.Position))); //持仓
-		modelPosition->setItem(row, 3, new QStandardItem(QString::number(cost))); //持仓均价
-		modelPosition->setItem(row, 4, new QStandardItem(QString::number(last_price))); //最新价
-		modelPosition->setItem(row, 5, new QStandardItem(QString::number(profit))); //浮盈
-		modelPosition->setItem(row, 6, new QStandardItem(QString::number(item.TodayPosition))); //今持仓，
-		modelPosition->setItem(row, 7, new QStandardItem(QString::number(item.Position - item.TodayPosition))); //昨持仓
+		modelPosition->setItem(row, 2, new QStandardItem(Num(item.Position))); //持仓
+		modelPosition->setItem(row, 3, new QStandardItem(Num(cost))); //持仓均价
+		modelPosition->setItem(row, 4, new QStandardItem(Num(last_price))); //最新价
+		modelPosition->setItem(row, 5, new QStandardItem(Num(profit))); //浮盈
+		modelPosition->setItem(row, 6, new QStandardItem(Num(item.TodayPosition))); //今持仓，
+		modelPosition->setItem(row, 7, new QStandardItem(Num(item.Position - item.TodayPosition))); //昨持仓
 		md_InstrumentID.push_back(item.InstrumentID);
 	}
 }
@@ -495,6 +523,16 @@ void MainWindow::SubmitArbOrder() {
 	ArbOrder ord = FillArbOrder();
 	g_arbOrderMap.insert(ord.Id, ord);
 	
+
+	//新建一个订单处理对象，
+	QObject::connect(g_orderWorker, SIGNAL(signal_DealArbOrder(QString)), g_orderWorker, SLOT(DealArbOrder(QString)));
+	//将订单处理槽函数移入新的线程去执行，
+	QThread* m_pThread = new QThread;
+	m_pThread->start();
+	g_orderWorker->moveToThread(m_pThread);
+
+
+
 	AddToArbOrderTable(ord);
 }
 
@@ -512,6 +550,8 @@ ArbOrder MainWindow::FillArbOrder() {
 	leg1.SlipPoint = ui.spinBox_slip1->value();
 	leg1.Chase = ui.checkBox_chase1->isChecked();
 	leg1.ChasePoint = ui.spinBox_chase1_point->value();
+	leg1.AvgPrice = 0;
+	leg1.DealVol = 0;
 	ord.OrdLegList.append(leg1);
 
 	OrdLeg leg2;
@@ -522,6 +562,8 @@ ArbOrder MainWindow::FillArbOrder() {
 	leg2.SlipPoint = ui.spinBox_slip2->value();
 	leg2.Chase = ui.checkBox_chase2->isChecked();
 	leg2.ChasePoint = ui.spinBox_chase2_point->value();
+	leg2.AvgPrice = 0;
+	leg2.DealVol = 0;
 	ord.OrdLegList.append(leg2);
 
 	ord.Offset = ui.comboBox_offset->currentText();
@@ -552,25 +594,30 @@ void MainWindow::AddToArbOrderTable(ArbOrder ord) {
 
 	modelArbOrder->setItem(row, 0, new QStandardItem(ord.Id));
 	modelArbOrder->setItem(row, 1, new QStandardItem(title));
-	modelArbOrder->setItem(row, 2, new QStandardItem("0/" + QString::number(ord.Times)));
-	//modelArbOrder->setItem(row, 3, new QStandardItem("N/A"));
+	modelArbOrder->setItem(row, 2, new QStandardItem("0/" + Num(ord.Times)));
+	modelArbOrder->setItem(row, 3, new QStandardItem(""));
 
 	for (int i = 0; i < ord.OrdLegList.count(); i++) {
-		ArbLeg leg = ord.OrdLegList[i];
-		QString line = leg.Direction + " " + leg.InstrumentID + QString::number(leg.Vol) + QStr("手 ") + leg.PriceType + "+" + QString::number(leg.ChasePoint) + (leg.Chase ? QStr(" 追价+") + QString::number(leg.ChasePoint) : QStr(" 不追价"));
+		OrdLeg leg = ord.OrdLegList[i];
+		QString line = leg.Direction + " " + leg.InstrumentID + Num(leg.Vol) + QStr("手 ") + leg.PriceType + "+" + Num(leg.ChasePoint) + (leg.Chase ? QStr(" 追价+") + Num(leg.ChasePoint) : QStr(" 不追价"));
 		modelArbOrder->setItem(row + 1 + i, 1, new QStandardItem(line));
-		modelArbOrder->setItem(row + 1 + i, 2, new QStandardItem("0/" + QString::number(leg.Vol)));
+		modelArbOrder->setItem(row + 1 + i, 2, new QStandardItem("0/" + Num(leg.Vol)));
 	}
 
 	// 添加删除按扭。
 	QPushButton *delBtn = new QPushButton(QStr("删除"));
 	delBtn->setMaximumHeight(20);
-	ui.tableView_arbordlist->setIndexWidget(modelArbOrder->index(row, 3), delBtn);
+	delBtn->setMaximumWidth(100);
+	ui.tableView_arbordlist->setIndexWidget(modelArbOrder->index(row, 4), delBtn);
+	
+	
+	
+	ui.tableView_arbordlist->
 	QObject::connect(delBtn, SIGNAL(clicked()), this, SLOT(DeleteArbOrder())); //绑定事件。
 
 	//合并第一列、最后一列。
 	ui.tableView_arbordlist->setSpan(row, 0, ord.OrdLegList.count() + 1, 1);
-	ui.tableView_arbordlist->setSpan(row, 3, ord.OrdLegList.count() + 1, 1);
+	ui.tableView_arbordlist->setSpan(row, 4, ord.OrdLegList.count() + 1, 1);
 }
 
 //计算套利组合的价格。
@@ -582,10 +629,10 @@ double CalArbPortfPrice(ArbPortf item, QString side) {
 	CThostFtdcDepthMarketDataField depth2 = g_depthMap[item.LegList[1].InstrumentID];
 	if (side == "buy") {
 		if (depth1.AskVolume1 <= 0 || depth2.BidVolume1 <= 0) return NULL;
-		open_formular.replace("A", QString::number(depth1.AskPrice1)).replace("B", QString::number(depth2.BidPrice1));
+		open_formular.replace("A", Num(depth1.AskPrice1)).replace("B", Num(depth2.BidPrice1));
 	} else if (side == "sell") {
 		if (depth1.BidVolume1 <= 0 || depth2.AskVolume1 <= 0) return NULL;
-		open_formular.replace("A", QString::number(depth1.BidPrice1)).replace("B", QString::number(depth2.AskPrice1));
+		open_formular.replace("A", Num(depth1.BidPrice1)).replace("B", Num(depth2.AskPrice1));
 	}
 	QJSEngine jsEngine;
 	QJSValue jval = jsEngine.evaluate(open_formular);
@@ -594,6 +641,7 @@ double CalArbPortfPrice(ArbPortf item, QString side) {
 	}
 	return jval.toNumber();
 }
+
 
 //更新持仓盈亏(价格有更新时)
 void MainWindow::UpdatePositionProfit(QString instrument_id, double last_price) {
@@ -604,8 +652,8 @@ void MainWindow::UpdatePositionProfit(QString instrument_id, double last_price) 
 			double cost = item.OpenCost / (item.Position*g_instMap[item.InstrumentID].VolumeMultiple);
 			double profit = (last_price - cost)* item.Position*g_instMap[item.InstrumentID].VolumeMultiple;
 			if (item.PosiDirection == THOST_FTDC_PD_Short) profit = -profit;
-			modelPosition->setItem(i, 4, new QStandardItem(QString::number(last_price))); //最新价
-			modelPosition->setItem(i, 5, new QStandardItem(QString::number(profit))); //浮盈
+			modelPosition->setItem(i, 4, new QStandardItem(Num(last_price))); //最新价
+			modelPosition->setItem(i, 5, new QStandardItem(Num(profit))); //浮盈
 		}
 	}
 }
@@ -618,8 +666,8 @@ void MainWindow::UpdateArbPrice(QString instrument_id, double last_price) {
 		if (item.LegList[0].InstrumentID == instrument_id || item.LegList[1].InstrumentID == instrument_id) {
 			double price1 = CalArbPortfPrice(item, "buy");
 			double price2 = CalArbPortfPrice(item, "sell");
-			modelArbPortf->setItem(i, 2, new QStandardItem(QString::number(price1))); //最新价
-			modelArbPortf->setItem(i, 3, new QStandardItem(QString::number(price2))); //最新价
+			modelArbPortf->setItem(i, 2, new QStandardItem(Num(price1))); //最新价
+			modelArbPortf->setItem(i, 3, new QStandardItem(Num(price2))); //最新价
 		}
 	}
 }
@@ -638,27 +686,27 @@ void MainWindow::RefreshOrdTable(QString orderRef, QString type) {
 		modelOrder->setItem(row, col++, new QStandardItem(ord.InstrumentID));//合约
 		modelOrder->setItem(row, col++, new QStandardItem(ord.Direction)); //买卖
 		modelOrder->setItem(row, col++, new QStandardItem(ord.Offset)); //开平
-		modelOrder->setItem(row, col++, new QStandardItem(QString::number(ord.VolumeTotalOriginal))); //手数
-		modelOrder->setItem(row, col++, new QStandardItem(QString::number(ord.VolumeTotal))); //未成交
-		modelOrder->setItem(row, col++, new QStandardItem(QString::number(ord.Price))); //报单价，
+		modelOrder->setItem(row, col++, new QStandardItem(Num(ord.VolumeTotalOriginal))); //手数
+		modelOrder->setItem(row, col++, new QStandardItem(Num(ord.VolumeTotal))); //未成交
+		modelOrder->setItem(row, col++, new QStandardItem(Num(ord.Price))); //报单价，
 		modelOrder->setItem(row, col++, new QStandardItem(OrdStatusMap[ord.OrderStatus.toLatin1()]));  //挂单状态，
-		modelOrder->setItem(row, col++, new QStandardItem(QString::number(ord.AvgPrice))); //成交均价，要去成交回报中才能更新。
+		modelOrder->setItem(row, col++, new QStandardItem(Num(ord.AvgPrice))); //成交均价，要去成交回报中才能更新。
 		modelOrder->setItem(row, col++, new QStandardItem(ord.InsertDate + " " + ord.InsertTime)); //报单时间，
 		md_InstrumentID.push_back(ord.InstrumentID.toStdString().c_str());
 
 	} else if (type == "update") { //更新成交数量、成均价、状态、
-		//更新挂单部分的
+		//更新挂单表
 		for (int i = 0; i < modelOrder->rowCount(); i++) {
 			QString orderRef = modelOrder->itemFromIndex(modelOrder->index(i, 0))->text();
 			if (ord.OrderRef == orderRef) {
-				modelOrder->setItem(i, 5, new QStandardItem(QString::number(ord.VolumeTotal))); //未成交
+				modelOrder->setItem(i, 5, new QStandardItem(Num(ord.VolumeTotal))); //未成交
 				modelOrder->setItem(i, 7, new QStandardItem(OrdStatusMap[ord.OrderStatus.toLatin1()]));  //挂单状态，
-				modelOrder->setItem(i, 8, new QStandardItem(QString::number(ord.AvgPrice))); //成交均价，要去成交回报中才能更新。
+				modelOrder->setItem(i, 8, new QStandardItem(Num(ord.AvgPrice))); //成交均价，要去成交回报中才能更新。
 				break;
 			}
 		}
 
-		//更新套利单部分。
+		//更新套利单表
 		for (int i = 0; i < modelArbOrder->rowCount(); i++) {
 			QString arbOrderId = modelArbOrder->itemFromIndex(modelArbOrder->index(i, 0))->text();
 			if (arbOrderId == ord.ArbOrderId) { //找到套利单，
@@ -666,10 +714,10 @@ void MainWindow::RefreshOrdTable(QString orderRef, QString type) {
 				for (int j = 0; j < arbord.OrdLegList.count(); j++) {//找到套利腿。
 					OrdLeg leg = arbord.OrdLegList[j];
 					if (leg.OrderRef == orderRef) {
-						QString str = QString::number(leg.DealVol) + "/" + QString::number(leg.DealVol) + " (" + leg.AvgPrice + ")";
-						modelArbOrder->setItem(i + 1, 2, new QStandardItem(str)); //成交数量、价格
-						QString st = OrdStatusMap[leg.Status.toLatin1()];
-						modelArbOrder->setItem(i + 1, 3, new QStandardItem(OrdStatusMap[leg.Status.toLatin1()]));  //挂单状态，
+						QString str = Num(leg.DealVol) + "/" + Num(leg.Vol) + " (" + Num(leg.AvgPrice) + ")";
+						modelArbOrder->setItem(i + 1 + j, 2, new QStandardItem(str)); //成交数量、价格
+						QString statusStr = OrdStatusMap[leg.Status.toLatin1()];
+						modelArbOrder->setItem(i + 1 + j, 3, new QStandardItem(statusStr));  //挂单状态，
 					}
 				}
 				break;

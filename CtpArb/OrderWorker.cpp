@@ -39,8 +39,8 @@ double CalLegPrice(OrdLeg leg) {
 }
 
 
-//处理本地套利单。
-void OrderWorker::DealArbOrder(QString instrument_id, double last_price) {
+//处理本地套利单。行情到达，满足条件时，立即下单，
+void OrderWorker::DealArbOrder(QString instrument_id) {
 	foreach (QString id, g_arbOrderMap.keys()) {
 		ArbOrder* arbOrder = &g_arbOrderMap[id];
 		bool exist = false;
@@ -64,30 +64,23 @@ void OrderWorker::DealArbOrder(QString instrument_id, double last_price) {
 			if (price1 == 0 || price2 == 0) { //必须2腿都有价格才处理。
 				break;
 			}
-			cond.replace("A", QString::number(price1)).replace("B", QString::number(price2));
+			cond.replace("A", Num(price1)).replace("B", Num(price2));
 			QJSValue condVal = jsEngine->evaluate(cond);
 			if (condVal.toBool()) {
 				for (int j = 0; j < legs.count(); j++) {
 					OrdLeg* leg = &arbOrder->OrdLegList[j]; //注意这里要用指针去引用，否则在后面是修改不了状态的。
-					if (legs[j].OrderRef == "") { //未发出
-						//计算下单价格：
-						double ord_price = g_depthMap[leg->InstrumentID].LastPrice;
-						QString OrderRef = NextArbOrderId();
-						int ret = spi->ReqOrderInsert_Whl(leg->InstrumentID, leg->Direction, arbOrder->Offset, ord_price, leg->Vol, OrderRef, arbOrder->Id, j);
-						//标记订单已经下发，
-						if (ret == 0) { //0，代表成功。 -1，表示网络连接失败；- 2，表示未处理请求超过许可数； - 3，表示每秒发送请求数超过许可数。
-							leg->OrderRef = OrderRef;
-						}
+					if (legs[j].OrderRef.isEmpty()) { //未发出
+						spi->ReqOrderInsert_OrdLeg(arbOrder, j);
 					}
 				}
 			}
 		}
 		//先手，先手腿先下单，下单N秒后，如果没有成交，再撤。
 		else if (arbOrder->SendOrderType.indexOf(QStr("先手"))==0) {
-				
 			
 		}
 
 		
 	}
 }
+

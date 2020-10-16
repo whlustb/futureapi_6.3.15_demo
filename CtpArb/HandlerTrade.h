@@ -16,6 +16,7 @@
 #include "traderSpi.h"
 #include <vector>
 #include <map>
+#include "CtpArbStruct.h"
 
 using namespace std;
 
@@ -88,7 +89,10 @@ public:
 	void ReqRemoveParkedOrderAction();
 
 	///报单录入请求
-	int ReqOrderInsert_Whl(QString inst, QString direction, QString offset, double price, double vol, QString OrderRef, QString ArbOrderId, int LegId);
+	int ReqOrderInsert_Whl(QString inst, QString direction, QString offset, double price, int vol, QString orderRef);
+
+	///报单录入请求，套利腿，
+	int ReqOrderInsert_OrdLeg(ArbOrder* arbOrder, int legId);
 
 	///报单录入请求
 	void ReqOrderInsert_Ordinary();

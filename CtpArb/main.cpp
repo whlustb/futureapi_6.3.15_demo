@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	FILE *logfile;
 
-	
-	
+	using namespace std;
+
     //CtpArb w;
     //w.show();
 	//w_main->show();

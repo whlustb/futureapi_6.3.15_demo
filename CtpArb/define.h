@@ -6,3 +6,4 @@ extern FILE *logfile;
 
 #define QStr(str) QString::fromLocal8Bit(str)
 
+#define Num(num) QString::number(num)

@@ -92,60 +92,6 @@ struct ArbPortf
 	}
 };
 
-//订单单腿，继承的组合的单腿。
-struct OrdLeg:public ArbLeg {
-	QString OrderRef; //下单时，自己填的，
-	int DealVol; //成交数量。
-	double AvgPrice; //成交均价。
-	QChar Status; //订单状态。
-
-	//序列化
-	friend QDataStream &operator<<(QDataStream& input, const OrdLeg& dt) {
-		input << dt.InstrumentID << dt.Direction << dt.Vol << dt.PriceType << dt.SlipPoint << dt.Chase << dt.ChasePoint;
-		input << dt.OrderRef << dt.DealVol << dt.AvgPrice << dt.Status;
-		return input;
-	}
-
-	//反序列化
-	friend QDataStream &operator>>(QDataStream& output, OrdLeg& dt) {
-		output >> dt.InstrumentID >> dt.Direction >> dt.Vol >> dt.PriceType >> dt.SlipPoint >> dt.Chase >> dt.ChasePoint;
-		output >> dt.OrderRef >> dt.DealVol >> dt.AvgPrice >> dt.Status;
-		return output;
-	}
-};
-
-//套利单、继承套利基本配置
-struct ArbOrder{
-	QString Id; //订单编号。
-	QString Offset; //开、平、自动开平
-	QString SendOrderType; //下单方式：全部同时、主动腿。
-	
-	QString CondFormula; //下单条件：公式
-	QString CondOperator; //下单条件。比较符号
-	QString CondVal; //下单条件。比较值
-
-	int Times; //份数，
-	bool Loop; //循环套利。
-	QTime Time; //下单时间
-	
-	QList<OrdLeg> OrdLegList; //套利单腿列表。
-
-	//序列化
-	friend QDataStream &operator<<(QDataStream& input, const ArbOrder& dt) {
-		input << dt.Id << dt.Offset << dt.SendOrderType \
-			<< dt.CondFormula << dt.CondOperator << dt.CondVal \
-			<< dt.Times << dt.Loop << dt.Time << dt.OrdLegList ;
-		return input;
-	}
-
-	//反序列化
-	friend QDataStream &operator>>(QDataStream& output, ArbOrder& dt) {
-		output >> dt.Id >> dt.Offset >> dt.SendOrderType \
-			>> dt.CondFormula >> dt.CondOperator >> dt.CondVal \
-			>> dt.Times >> dt.Loop >> dt.Time >> dt.OrdLegList ;
-		return output;
-	}
-};
 
 //普通订单、一旦提交订单、就立即保存、收到回报时，更新本地订单。
 struct Order {
@@ -177,6 +123,9 @@ struct Order {
 	///委托时间
 	QString	InsertTime;
 
+	//记录成交价值、便于计算成交均价，
+	double TotalDealed; //
+
 	//记录它所属的套利单信息。
 	QString ArbOrderId;
 	int LegId;
@@ -185,7 +134,7 @@ struct Order {
 	friend QDataStream &operator<<(QDataStream& input, const Order& dt) {
 		input << dt.UserID << dt.OrderRef << dt.InstrumentID << dt.Price << dt.AvgPrice << dt.VolumeTotalOriginal << dt.VolumeTotal;
 		input << dt.Direction << dt.Offset << dt.OrderSource << dt.OrderStatus << dt.InsertDate << dt.InsertTime ;
-		input << dt.ArbOrderId << dt.LegId;
+		input << dt.TotalDealed << dt.ArbOrderId << dt.LegId;
 		return input;
 	}
 
@@ -193,9 +142,65 @@ struct Order {
 	friend QDataStream &operator>>(QDataStream& output, Order& dt) {
 		output >> dt.UserID >> dt.OrderRef >> dt.InstrumentID >> dt.Price >> dt.AvgPrice >> dt.VolumeTotalOriginal >> dt.VolumeTotal;
 		output >> dt.Direction >> dt.Offset >> dt.OrderSource >> dt.OrderStatus >> dt.InsertDate >> dt.InsertTime;
-		output >> dt.ArbOrderId >> dt.LegId;
+		output >> dt.TotalDealed >> dt.ArbOrderId >> dt.LegId;
 		return output;
 	}
 
+};
 
+//订单单腿，继承的组合的单腿。
+struct OrdLeg :public ArbLeg {
+	int DealVol; //成交数量。
+	double AvgPrice; //成交均价。
+	QChar Status; //订单状态。
+
+	QString OrderRef; //最新的这个订单的本地参考编号。。
+
+	//序列化
+	friend QDataStream &operator<<(QDataStream& input, const OrdLeg& dt) {
+		input << dt.InstrumentID << dt.Direction << dt.Vol << dt.PriceType << dt.SlipPoint << dt.Chase << dt.ChasePoint;
+		input << dt.DealVol << dt.AvgPrice << dt.Status << dt.OrderRef;
+		return input;
+	}
+
+	//反序列化
+	friend QDataStream &operator>>(QDataStream& output, OrdLeg& dt) {
+		output >> dt.InstrumentID >> dt.Direction >> dt.Vol >> dt.PriceType >> dt.SlipPoint >> dt.Chase >> dt.ChasePoint;
+		output >> dt.DealVol >> dt.AvgPrice >> dt.Status >> dt.OrderRef;
+		return output;
+	}
+};
+
+
+//套利单、继承套利基本配置
+struct ArbOrder {
+	QString Id; //订单编号。
+	QString Offset; //开、平、自动开平
+	QString SendOrderType; //下单方式：全部同时、主动腿。
+
+	QString CondFormula; //下单条件：公式
+	QString CondOperator; //下单条件。比较符号
+	QString CondVal; //下单条件。比较值
+
+	int Times; //份数，
+	bool Loop; //循环套利。
+	QTime Time; //下单时间
+
+	QList<OrdLeg> OrdLegList; //套利单腿列表。
+
+	//序列化
+	friend QDataStream &operator<<(QDataStream& input, const ArbOrder& dt) {
+		input << dt.Id << dt.Offset << dt.SendOrderType \
+			<< dt.CondFormula << dt.CondOperator << dt.CondVal \
+			<< dt.Times << dt.Loop << dt.Time << dt.OrdLegList;
+		return input;
+	}
+
+	//反序列化
+	friend QDataStream &operator>>(QDataStream& output, ArbOrder& dt) {
+		output >> dt.Id >> dt.Offset >> dt.SendOrderType \
+			>> dt.CondFormula >> dt.CondOperator >> dt.CondVal \
+			>> dt.Times >> dt.Loop >> dt.Time >> dt.OrdLegList;
+		return output;
+	}
 };
